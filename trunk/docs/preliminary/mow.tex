@@ -15,7 +15,7 @@
 \author{Micha³ Skrzêdziejewski, Micha³ Kozakiewicz}
 
 \begin{document}
-\bibliographystyle{abbrv}
+\bibliographystyle{ieeetr}
 %\maketitle
 \thispagestyle{empty}
 
@@ -125,7 +125,6 @@ cz¹stkowego b³êdu. Metoda ta jest stosowana w przypadku wyj¹tkowo ma³ych
 zbiorów przyk³adów. Jej niew¹tpliw¹ wad¹ jest kosztownoœæ obliczeniowa, gdy¿ 
 proces uczenia musimy powtórzyæ tyle razy, ile jest przyk³adów. Prób¹ rozwi¹zania tego problemu jest metoda {\em virtual leave-one-out} bazuj¹ca na
 pojêciu dŸwigni.
-
 \end{itemize}
 
 \subsection{Inne wykorzystanie aproksymatora}
@@ -138,8 +137,31 @@ i uwzglêdniæ tê interpretacjê w procesie uczenia.
 
 \subsection{Aproksymator CMAC}
 CMAC jest skrótem od angielskiej nazwy {\em Cereberral Model Articulation Controller}. Zosta³ on opisany przez J.S. Albusa w 1975 r. jako prosty model
-kory mó¿d¿ku \cite{albus1975dsc, albus1975nam}.
+kory mó¿d¿ku \cite{albus1975dsc, albus1975nam}. Od tego czasu powsta³o wiele ró¿nych odmian podstawowej wersji, a tak¿e interesuj¹cych zastosowañ, takich jak
+sterowanie robotem pod¹¿aj¹cym za lini¹ \cite{collins1999ccl} czy 
+zarz¹dzanie energi¹ w skuterach \cite{sinica:ice}. Podstawow¹ zalet¹ omawianego
+aproksymatora jest szybkoœæ dzia³ania, zarówno jeœli chodzi o uczenie siê jak i
+obliczanie odpowiedzi dla konkretnych wartoœci wejœæ. Fakt ten uzasadnia stosowanie go w adaptacyjnych systemach sterowania czasu rzeczywistego.
 
+CMAC mo¿e byæ traktowany jako pewien szczególny rodzaj rozproszonego przybli¿onego kodowania, które z kolei wywodzi siê z ogólnej idei 
+rozszerzonej reprezentacji \cite{cichosz2000sus}. Wiêkszoœæ opracowañ uznaje
+CMAC za rodzaj sieci neuronowej, chocia¿ analogia nie jest tak wyraŸna jak w 
+przypadku MLP (nie istniej¹ pojedyncze neurony, chocia¿ s¹ warstwy). Ze wzglêdów 
+implementacyjnych wygodnie jest te¿ traktowaæ CMAC jako tablicê przegl¹dow¹ 
+(ang. {\em lookup table}).
+
+Zasadê dzia³ania CMACa naj³atwiej wyjaœniæ na przypadku jednowymiarowym
+(jedno wejœcie, jedno wyjœcie). Przejœcie do przypadku z wektorem wejœæ 
+o wiêkszej iloœci elementów nie nastrêcza trudnoœci. Za³ó¿my ¿e rozpatrywany
+atrybut $\phi_0(x) \in (\phi_1^0, \phi_2^0]$. Podzielmy przedzia³ do którego 
+nale¿y $\phi_0(x)$ na $m_0$ przyleg³ych podprzedzia³ów o równych d³ugoœciach. Zauwa¿my ¿e z ka¿dym przyk³adem $x$ mo¿emy zwi¹zaæ przedzia³ do którego ``wpada'' $x$ ze wzglêdu na atrybut $\phi_0(x)$. Dodatkowo zwi¹¿my 
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{przedz.pdf}
+\caption{Aktywne przedzia³y dla zadanej wartoœci atrybutu}
+\label{fig:przedzialy}
+\end{figure}
 
 \subsubsection{Uczenie siê}
 
@@ -155,10 +177,17 @@ Obie te metody maj¹ tê zaletê, ¿e liczba wygenerowanych przyk³adów nigdy nie
 jest zbyt ma³a. Jednak du¿o bardziej wymagaj¹cym, a jednoczeœnie ciekawszym 
 badawczo podejœciem jest testowanie na ``rzeczywistych'' danych i takie w³aœnie
 dane zostan¹ wykorzystane w projekcie. Zestawy przyk³adów bêd¹ pochodziæ z
-ogólnodostêpnych repozytoriów \cite{Asuncion+Newman:2007. guvenir2000buf}.
+ogólnodostêpnych repozytoriów \cite{Asuncion+Newman:2007,guvenir2000buf}.
 
 Ze wzglêdu na uprzednio zasygnalizowane problemy, wybrane zostan¹ zestawy
 przyk³adów wœród których nie wystêpuj¹ atrybuty nominalne i porz¹dkowe 
 (zgodnie z sugesti¹ prowadz¹cego projekt)
+
+\subsection{Testy}
+\subsubsection{Zdolnoœæ generalizacji}
+\subsubsection{Szybkoœæ uczenia siê}
+W wielu zastosowaniach szybkoœæ uczenia siê jest cech¹ drugorzêdn¹ je¿eli chodzi
+o kryterium wyboru takiego czy innego aproksymatora. Dlatego 
+
 \bibliography{mow}
 \end{document}
