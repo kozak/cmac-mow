@@ -1,5 +1,5 @@
 ## utils for file IO and stats for linear models / prediction
-require(utils);require(stats);
+require(utils);require(stats);require(e1071);require(nnet);
 
 ## column name for each column in auto-mpg.data file
 columnNames <- c("mpg", "cylinders", "displacement", "horsepower","weight", "acceleration", "model_year", "origin", "car name");
@@ -26,3 +26,13 @@ predict(carModel, newCar);
 ## on the result. While the weight is self explanatory, the influence of model year can be explained by the fast development of effective 
 ## engines between the years 70-90.
 ## If this progress wouldnt reach a plateau, today we would drive very energy efficient cars.  
+
+
+## the same prediction using SVM
+
+svm.model <- svm(mpg~cylinders+displacement+as.numeric(horsepower)+weight+acceleration+model_year, data=carsmpg, cost = 100, gamma = 1);
+predict(svm.model, newCar);
+
+## what about MLP ? 
+## nnet.model <- nnet(mpg~cylinders+displacement+as.numeric(horsepower)+weight+acceleration+model_year, data=carsmpg, size = 2, na.action = na.omit);
+## predict(nnet.model, newCar, type=c("class"));
