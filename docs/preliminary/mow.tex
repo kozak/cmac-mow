@@ -15,14 +15,15 @@
 \author{Micha³ Skrzêdziejewski, Micha³ Kozakiewicz}
 
 \begin{document}
+\bibliographystyle{abbrv}
 %\maketitle
 \thispagestyle{empty}
 
-\section{Wstêp}
+\section{WSTÊP}
 \subsection{Aproksymacja funkcji}
 W praktyce in¿ynierskiej i badaniach naukowych czêsto powstaje potrzeba 
 przybli¿enia pewnej funkcji. Funkcja ta mo¿e byæ trudna do obliczenia,
-pomiary kosztowne a ich iloœæ ograniczona \cite{masters}. W wielu przypadkach
+pomiary kosztowne a ich iloœæ ograniczona \cite{masters1993pnn}. W wielu przypadkach
 wystarcza zastosowanie klasycznych metod numerycznych, takich jak regresja
 liniowa, przybli¿enie wielomianami czy funkcjami sklejanymi (ang. {\em 
 SPLINES}).
@@ -33,42 +34,101 @@ nieliniowym zjawiskiem z bli¿ej nieznanymi zale¿noœciami. W takim przypadku z
 pomoc¹ przychodz¹ ucz¹ce siê aproksymatory funkcji, takie jak CMAC który bêdzie
 przedmiotem implementacji.
 
+\subsection{Dziedzina i zbiór przyk³adów}
 WeŸmy pod uwagê funkcjê docelow¹ $f:X \mapsto \Re^n$. Zauwa¿my, ¿e bez straty
 ogólnoœci mo¿emy problem przybli¿enia tej funkcji zredukowaæ do problemu
 przybli¿enia funkcji $f:X \mapsto \Re$. Da siê to osi¹gn¹æ poprzez z³o¿enie
 $n$ pojedynczych klasyfikatorów, z których ka¿dy realizuje odwzorowanie 
-$f:x \mapsto \Re$ dla konkretnego elementu wektora wartoœci oryginalnej funkcji.
+$f:X \mapsto \Re$ dla konkretnego elementu wektora wartoœci oryginalnej funkcji.
 
 Do dyspozycji mamy pewn¹ iloœæ przyk³adów z dziedziny $X$. Pojedynczy przyk³ad 
 jest zwykle reprezentowany przez wektor atrybutów (cech) 
 $\phi(x) = \langle \phi_0(x), \phi_1(x), \dots, \phi_n(x) \rangle$. Czêsto na koniec wektora atrybutów wstawia siê na sta³e atrybut $\phi_n(x) = 1$. Mo¿na tu zauwa¿yæ analogiê do regresji liniowej, w której szukamy funkcji postaci $y = ax + b = \langle a, b \rangle \cdotp \langle x,1 \rangle$. Parametr b, który mo¿emy potraktowaæ jako wagê, pozwala nam regulowaæ po³o¿enie prostej. 
 
 W przypadku wiêkszoœci metod aproksymacji funkcji musimy ograniczyæ siê do 
-atrybutów o wartoœciach ci¹g³ych. W przypadku gdy przyk³ady posiadaj¹ atrybuty
+atrybutów o wartoœciach ci¹g³ych. Jeœli jednak przyk³ady posiadaj¹ atrybuty
 nominalne lub porz¹dkowe, nale¿y dokonaæ odpowiedniego ich przekszta³cenia.
 Oczywistym pomys³em jest nadanie tym atrybutom wartoœci liczbowych. Niestety, o
-ile to rozwi¹zanie ma sens w przypadku atrybutów porz¹dkowych (np. $wtorek = 2$,
+ile rozwi¹zanie to ma sens w przypadku atrybutów porz¹dkowych (np. $wtorek = 2$,
 $czwartek = 4$, $sobota = 6)$, to w przypadku atrybutów nominalnych wprowadza 
 ono nieuzasadniony porz¹dek (np. $mercedes = 1$, $audi = 2$, $fiat = 3$). 
 Alternatyw¹ jest wprowadzenie dodatkowego atrybutu binarnego dla ka¿dej mo¿liwej
 wartoœci atrybutu nominalnego. Prowadzi to jednak do zwiêkszenia wymiarowoœci 
 problemu.
 
+\subsection{Rodzaje aproksymatorów}
 Nauczony aproksymator reprezentuje pewn¹ hipotezê $h(x)$ bêd¹c¹ przybli¿eniem
 funkcji docelowej $f(x)$. Bior¹c jako kryterium podzia³u sposób reprezentacji 
-hipotez, mo¿emy wyró¿niæ nastêpuj¹ce rodzaje klasyfikatorów \cite{cichosz}:
+hipotez, mo¿emy wyró¿niæ nastêpuj¹ce rodzaje klasyfikatorów \cite{cichosz2000sus}:
 \begin{itemize}
 \item {\bf parametryczne}, w których hipoteza jest reprezentowana przez 
 wektor liczb rzeczywistych zwanych wagami (jest on modyfikowany w trakcie uczenia siê),
 \item {\bf pamiêciowe}, które przechowuj¹ przyk³ady trenuj¹ce a odpowiedŸ dla
 kolejnych przyk³adów wyznaczaj¹ na podstawie odpowiedzi zapamiêtanych przyk³adów zbli¿onych,
 \item {\bf symboliczne}, wykorzystuj¹ce symboliczn¹ reprezentacje hipotez.
-\end{itemize}. Przedmiotem naszych rozwa¿añ bêd¹ klasyfikatory parametryczne,
+\end{itemize}
+Przedmiotem naszych rozwa¿añ bêd¹ klasyfikatory parametryczne,
 w których wartoœæ $h(x) = F(\phi(x),w)$, gdzie $F$ jest funkcj¹ opisuj¹c¹
 zale¿noœæ wyjœæ aproksymatora od wektora atrybutów danego przyk³adu i
 wektora wag. W wiêkszoœci przypadków funkcja $F$ ma ustalon¹ postaæ, wiêc do 
 opisu hipotezy aproksymatora wystarcza sam wektor wag $w$.
 
+
+\subsection{Proces uczenia siê}
+Praktycznie wszystkie metody uczenia siê aproksymatorów parametrycznych opieraj¹
+siê na minimalizacji funkcji b³êdu na zbiorze trenuj¹cym, któr¹ najczêœciej
+przyjmujemy jako
+
+\begin{align}
+	e^f_P(h) = \frac{1}{|P|}\sum_{x\in P}(f(x)-h(x))^2.
+\end{align}
+
+Minimalizacja tak zdefiniowanej funkcji b³êdu odbywa siê poprzez aktualizacjê
+wektora wag. Klasyczn¹ metod¹ osi¹gniêcia tego celu jest metoda najwiêkszego
+spadku (ang. {\em steepest descent}). Jest to metoda gradientowa, aktualizuj¹ca wektor wag zgodnie ze wzorem:
+
+\begin{align}
+	\Delta_w = -\beta \nabla_w \varepsilon_T^f(h_w)
+\end{align}
+
+gdzie $\beta$ oznacza tzw. rozmiar kroku a $\nabla_w \varepsilon_T^f(h_w)$ oznacza wektor pochodnych cz¹stkowych 
+funkcji b³êdu wzglêdem poszczególnych wag. Sposób obliczenia pochodnych cz¹stkowych zale¿y od konkretnego modelu, np. dla sieci neuronowych typu MLP
+otrzymuje siê go wykorzystuj¹c metodê propagacji wstecznej (ang. {\em back 
+propagation}). Aktualizacja wag dokonuje siê zwykle w trybie wsadowym, czyli po 
+przetworzeniu ca³ego zbioru trenuj¹cego. W ten sposób uniezale¿niamy wynik
+nauczania od kolejnoœci prezentowanych przyk³adów.
+
+Podstawowa metoda najwiêkszego spadku ³atwo utyka w minimach lokalnych. Z tego powodu w sieciach MLP u¿ywa siê bardziej skomplikowanych metod jak na przyk³ad 
+metoda Levenberga-Marquardta.
+
+\subsection{Ocena jakoœci modeli}
+Dla aproksymatorów parametrycznych, proces uczenia siê polega na modyfikacji wag a¿ do osi¹gniêcia zamierzonego celu, którym jest zwykle minimalizacja funkcji b³êdu. Czêsto oprócz wyboru metody 
+uczenia siê mamy tak¿e pewien wp³yw na strukturê samego modelu. W przypadku klasycznego perceptronu wielowarstwowego mo¿emy sterowaæ iloœci¹ 
+neuronów warstwy ukrytej, lub (rzadziej) iloœci¹ warstw ukrytych. Dla aproksymatora CMAC takim parametrem jest iloœæ przedzia³ów na które dzielona jest dziedzina danego atrybutu a tak¿e liczba warstw. Naszym celem jest wybór 
+modelu który jak najlepiej oddaje rzeczywist¹ funkcjê $f(x)$. Pomocne mog¹
+byæ tu nastêpuj¹ce metody oceny zdolnoœci modelu do generalizacji\cite{dreyfus:mav}:
+\begin{itemize}
+\item {\bf Jednokrotny podzia³} (ang. {\em hold-out}). W tej metodzie dokonujemy losowego podzia³u przyk³adów na dwie grupy, z których pierwsza bêdzie u¿ywana w procesie nauczania a
+druga do oceny uzyskanego modelu. Typowe proporcje wynosz¹ $70\%$ dla zbioru
+trenuj¹cego i $30\%$ dla testowego. Metoda ta sprawdza siê dla stosunkowo du¿ych
+zbiorów danych. Jej wad¹ jest to, ¿e byæ mo¿e istotne informacje ze zbioru 
+testowego nie mog¹ byæ wykorzystane w procesie uczenia siê.
+
+\item {\bf Ocena krzy¿owa} (ang. {\em cross-validation}). W klasycznej postaci tej metody dzielimy zbiór przyk³adów na $n$ podzbiorów. Nastêpnie odrzucamy jeden podzbiór a pozosta³e $n-1$ podzbiorów wykorzystujemy do nauczenia modelu. Odrzucony zbiór s³u¿y do obliczenia b³êdu modelu. Operacjê odrzucenia powtarzamy 
+dla ka¿dego podzbioru a b³êdy uzyskane dla kolejno uzyskanych podzbiorów. 
+W ten sposób ostateczna miara przydatnoœci modelu nie jest obci¹¿ona takim czy innym wyborem zbioru trenuj¹cego i testowego (jak w metodzie jednokrotnego podzia³u). Jest to dobre rozwi¹zanie w przypadku mniejszych zbiorów przyk³adów.
+
+\item {\bf Skrajna ocena krzy¿owa} (ang {\em leave-one-out}). Jest to przypadek
+graniczny omówionej wy¿ej metody oceny krzy¿owej, gdzie zbiór $m$ przyk³adów 
+jest dzielony na $m$ jednoelementowych podzbiorów. Nastêpnie, kolejno, ka¿dy z nich jest usuwany, model uczony a odrzucony przyk³ad wykorzystany do obliczenia
+cz¹stkowego b³êdu. Metoda ta jest stosowana w przypadku wyj¹tkowo ma³ych 
+zbiorów przyk³adów. Jej niew¹tpliw¹ wad¹ jest kosztownoœæ obliczeniowa, gdy¿ 
+proces uczenia musimy powtórzyæ tyle razy, ile jest przyk³adów. Prób¹ rozwi¹zania tego problemu jest metoda {\em virtual leave-one-out} bazuj¹ca na
+pojêciu dŸwigni.
+
+\end{itemize}
+
+\subsection{Inne wykorzystanie aproksymatora}
 Na koniec warto zauwa¿yæ, ¿e mo¿emy u¿yæ aproksymatora do rozwi¹zywania zadañ 
 klasyfikacji, grupowania czy te¿ prognozowania szeregów czasowych. Nale¿y po 
 prostu nadaæ wyjœciom modelu pewne znaczenie, zale¿ne od rozwi¹zywanego 
@@ -76,48 +136,29 @@ problemu. Przyk³adowo dla zadania klasyfikacji mo¿emy jedno z wyjœæ
 aproksymatora zdefiniowaæ jako prawdopodobieñstwo przynale¿noœci do danej klasy
 i uwzglêdniæ tê interpretacjê w procesie uczenia.
 
-\subsection{Proces uczenia siê}
-Podstawowym celem uczenia siê jest 
-
-\subsection{Ocena jakoœci modeli}
-W trakcie procesu uczenia siê minimalizowany jest b³¹d na zbiorze trenuj¹cym. 
-Oczywiste jest wiêc, ¿e nie mo¿e on byæ brany pod uwagê przy ocenie jakoœci
-modelu. Naszym celem jest uzyskanie modelu, który radzi sobie dobrze ''nowymi danymi'' czyli takimi, które nie by³y prezentowane podczas uczenia siê. O takim
-modelu mówimy, ¿e ma dobr¹ zdolnoœæ do generalizacji. Do dyspozycji mamy 
-nastêpuj¹ce metody: 
-
-\begin{itemize}
-\item {\bf Jednokrotny podzia³} (ang. {\em Hold-out)}. W tej metodzie dokonujemy losowego podzia³u przyk³adów na dwie grupy, z których jedna bêdzie u¿ywana w procesie nauczania a
-druga do oceny uzyskanego modelu. Typowe proporcje wynosz¹ $70\%$ dla zbioru
-trenuj¹cego i $30\%$ dla testowego. Metoda ta sprawdza siê dla stosunkowo du¿ych
-zbiorów danych. Jej wad¹ jest to, ¿e byæ mo¿e istotne informacje ze zbioru 
-testowego nie mog¹ byæ wykorzystane w procesie uczenia siê.
-
-\item {\bf Ocena krzy¿owa}. 
-\item {\bf Skrajna ocena krzy¿owa}
-
-\end{itemize}
-
 \subsection{Aproksymator CMAC}
-Struktura aproksymatora CMAC 
+CMAC jest skrótem od angielskiej nazwy {\em Cereberral Model Articulation Controller}. Zosta³ on opisany przez J.S. Albusa w 1975 r. jako prosty model
+kory mó¿d¿ku \cite{albus1975dsc, albus1975nam}.
 
-\section{Szczegó³y projektu}
+
+\subsubsection{Uczenie siê}
+
+
+\section{SZCZEGÓ£Y PROJEKTU}
+\subsection{Cel projektu}
 \subsection{Dane}
 Procesy uczenia siê i oceny jakoœci klasyfikatora wymagaj¹ z oczywistych 
 wzglêdów dostatecznej liczby przyk³adów. Najprostsze jest u¿ycie pewnej znanej
-funkcji do wygenerowania wymaganej liczby przyk³adów. Nieco bardziej miarodajne
+funkcji do wygenerowania wymaganej ich liczby. Nieco bardziej miarodajne
 mo¿e byæ u¿ycie przyk³adów uzyskanych z komputerowej symulacji jakiegoœ procesu.
 Obie te metody maj¹ tê zaletê, ¿e liczba wygenerowanych przyk³adów nigdy nie 
 jest zbyt ma³a. Jednak du¿o bardziej wymagaj¹cym, a jednoczeœnie ciekawszym 
 badawczo podejœciem jest testowanie na ``rzeczywistych'' danych i takie w³aœnie
 dane zostan¹ wykorzystane w projekcie. Zestawy przyk³adów bêd¹ pochodziæ z
-ogólnodostêpnych repozytoriów (dodaæ biblio).
+ogólnodostêpnych repozytoriów \cite{Asuncion+Newman:2007. guvenir2000buf}.
 
 Ze wzglêdu na uprzednio zasygnalizowane problemy, wybrane zostan¹ zestawy
 przyk³adów wœród których nie wystêpuj¹ atrybuty nominalne i porz¹dkowe 
 (zgodnie z sugesti¹ prowadz¹cego projekt)
-\begin{thebibliography}{99}
-	\bibitem{masters}efwwef
-	\bibitem{cichosz}
-\end{thebibliography}
+\bibliography{mow}
 \end{document}
