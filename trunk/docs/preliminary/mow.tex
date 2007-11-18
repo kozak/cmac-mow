@@ -1,0 +1,108 @@
+\documentclass{DTAS07}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{polski}
+\usepackage[cp1250]{inputenc}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsmath}
+\usepackage{url}
+
+\title{IMPLEMENTACJA APROKSYMATORA CMAC\\
+{\small Dokumentacja wstêpna projektu MOW}
+}
+
+\author{Micha³ Skrzêdziejewski, Micha³ Kozakiewicz}
+
+\begin{document}
+%\maketitle
+\thispagestyle{empty}
+
+\section{Wstêp}
+\subsection{Aproksymacja funkcji}
+W praktyce in¿ynierskiej i badaniach naukowych czêsto powstaje potrzeba 
+przybli¿enia pewnej funkcji. Funkcja ta mo¿e byæ trudna do obliczenia,
+pomiary kosztowne a ich iloœæ ograniczona \cite{masters}. W wielu przypadkach
+wystarcza zastosowanie klasycznych metod numerycznych, takich jak regresja
+liniowa, przybli¿enie wielomianami czy funkcjami sklejanymi (ang. {\em 
+SPLINES}).
+Zwykle mo¿na to uczyniæ, gdy jest siê w posiadaniu wiedzy na temat postaci 
+aproksymowanej funkcji. Czêsto jednak funkcja ta jest nieznana a o jej postaci
+nie mo¿na powiedzieæ nic. W szczególnoœci mo¿emy mieæ do czynienia z wysoce 
+nieliniowym zjawiskiem z bli¿ej nieznanymi zale¿noœciami. W takim przypadku z 
+pomoc¹ przychodz¹ ucz¹ce siê aproksymatory funkcji, takie jak CMAC który bêdzie
+przedmiotem implementacji.
+
+WeŸmy pod uwagê funkcjê docelow¹ $f:X \mapsto \Re^n$. Zauwa¿my, ¿e bez straty
+ogólnoœci mo¿emy problem przybli¿enia tej funkcji zredukowaæ do problemu
+przybli¿enia funkcji $f:X \mapsto \Re$. Da siê to osi¹gn¹æ poprzez z³o¿enie
+$n$ pojedynczych klasyfikatorów, z których ka¿dy realizuje odwzorowanie 
+$f:x \mapsto \Re$ dla konkretnego elementu wektora wartoœci oryginalnej funkcji.
+
+Do dyspozycji mamy pewn¹ iloœæ przyk³adów z dziedziny $X$. Pojedynczy przyk³ad 
+jest zwykle reprezentowany przez wektor atrybutów (cech) 
+$\phi(x) = \langle \phi_0(x), \phi_1(x), \dots, \phi_n(x) \rangle$. Czêsto na koniec wektora atrybutów wstawia siê na sta³e atrybut $\phi_n(x) = 1$. Mo¿na tu zauwa¿yæ analogiê do regresji liniowej, w której szukamy funkcji postaci $y = ax + b = \langle a, b \rangle \cdotp \langle x,1 \rangle$. Parametr b, który mo¿emy potraktowaæ jako wagê, pozwala nam regulowaæ po³o¿enie prostej. 
+
+W przypadku wiêkszoœci metod aproksymacji funkcji musimy ograniczyæ siê do 
+atrybutów o wartoœciach ci¹g³ych. W przypadku gdy przyk³ady posiadaj¹ atrybuty
+nominalne lub porz¹dkowe, nale¿y dokonaæ odpowiedniego ich przekszta³cenia.
+Oczywistym pomys³em jest nadanie tym atrybutom wartoœci liczbowych. Niestety, o
+ile to rozwi¹zanie ma sens w przypadku atrybutów porz¹dkowych (np. $wtorek = 2$,
+$czwartek = 4$, $sobota = 6)$, to w przypadku atrybutów nominalnych wprowadza 
+ono nieuzasadniony porz¹dek (np. $mercedes = 1$, $audi = 2$, $fiat = 3$). 
+Alternatyw¹ jest wprowadzenie dodatkowego atrybutu binarnego dla ka¿dej mo¿liwej
+wartoœci atrybutu nominalnego. Prowadzi to jednak do zwiêkszenia wymiarowoœci 
+problemu.
+
+Nauczony aproksymator reprezentuje pewn¹ hipotezê $h(x)$ bêd¹c¹ przybli¿eniem
+funkcji docelowej $f(x)$. Bior¹c jako kryterium podzia³u sposób reprezentacji 
+hipotez, mo¿emy wyró¿niæ nastêpuj¹ce rodzaje klasyfikatorów \cite{cichosz}:
+\begin{itemize}
+\item {\bf parametryczne}, w których hipoteza jest reprezentowana przez 
+wektor liczb rzeczywistych zwanych wagami (jest on modyfikowany w trakcie uczenia siê),
+\item {\bf pamiêciowe}, które przechowuj¹ przyk³ady trenuj¹ce a odpowiedŸ dla
+kolejnych przyk³adów wyznaczaj¹ na podstawie odpowiedzi zapamiêtanych przyk³adów zbli¿onych,
+\item {\bf symboliczne}, wykorzystuj¹ce symboliczn¹ reprezentacje hipotez.
+\end{itemize}. Przedmiotem naszych rozwa¿añ bêd¹ klasyfikatory parametryczne,
+w których wartoœæ $h(x) = F(\phi(x),w)$, gdzie $F$ jest funkcj¹ opisuj¹c¹
+zale¿noœæ wyjœæ aproksymatora od wektora atrybutów danego przyk³adu i
+wektora wag. W wiêkszoœci przypadków funkcja $F$ ma ustalon¹ postaæ, wiêc do 
+opisu hipotezy aproksymatora wystarcza sam wektor wag $w$.
+
+Na koniec warto zauwa¿yæ, ¿e mo¿emy u¿yæ aproksymatora do rozwi¹zywania zadañ 
+klasyfikacji, grupowania czy te¿ prognozowania szeregów czasowych. Nale¿y po 
+prostu nadaæ wyjœciom modelu pewne znaczenie, zale¿ne od rozwi¹zywanego 
+problemu. Przyk³adowo dla zadania klasyfikacji mo¿emy jedno z wyjœæ 
+aproksymatora zdefiniowaæ jako prawdopodobieñstwo przynale¿noœci do danej klasy
+i uwzglêdniæ tê interpretacjê w procesie uczenia.
+
+
+\subsection{Proces uczenia siê}
+Podstawowym celem uczenia siê 
+
+\subsection{Ocena jakoœci modeli}
+
+
+\subsection{Aproksymator CMAC}
+Struktura aproksymatora CMAC 
+
+\section{Szczegó³y projektu}
+\subsection{Dane  fw wrf w ftrenuj¹ce}
+Procesy uczenia siê i oceny jakoœci klasyfikatora wymagaj¹ z oczywistych 
+wzglêdów dostatecznej liczby przyk³adów. Najprostsze jest u¿ycie pewnej znanej
+funkcji do wygenerowania wymaganej liczby przyk³adów. Nieco bardziej miarodajne
+mo¿e byæ u¿ycie przyk³adów uzyskanych z komputerowej symulacji jakiegoœ procesu.
+Obie te metody maj¹ tê zaletê, ¿e liczba wygenerowanych przyk³adów nigdy nie 
+jest zbyt ma³a. Jednak du¿o bardziej wymagaj¹cym, a jednoczeœnie ciekawszym 
+badawczo podejœciem jest testowanie na ``rzeczywistych'' danych i takie w³aœnie
+dane zostan¹ wykorzystane w projekcie. Zestawy przyk³adów bêd¹ pochodziæ z
+ogólnodostêpnych repozytoriów (dodaæ biblio).
+
+Ze wzglêdu na uprzednio zasygnalizowane problemy, wybrane zostan¹ zestawy
+przyk³adów wœród których nie wystêpuj¹ atrybuty nominalne i porz¹dkowe 
+(zgodnie z sugesti¹ prowadz¹cego projekt)
+\begin{thebibliography}{99}
+	\bibitem{masters}efwwef
+	\bibitem{cichosz}
+\end{thebibliography}
+\end{document}
