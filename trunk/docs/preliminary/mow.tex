@@ -76,18 +76,33 @@ problemu. Przyk³adowo dla zadania klasyfikacji mo¿emy jedno z wyjœæ
 aproksymatora zdefiniowaæ jako prawdopodobieñstwo przynale¿noœci do danej klasy
 i uwzglêdniæ tê interpretacjê w procesie uczenia.
 
-
 \subsection{Proces uczenia siê}
-Podstawowym celem uczenia siê 
+Podstawowym celem uczenia siê jest 
 
 \subsection{Ocena jakoœci modeli}
+W trakcie procesu uczenia siê minimalizowany jest b³¹d na zbiorze trenuj¹cym. 
+Oczywiste jest wiêc, ¿e nie mo¿e on byæ brany pod uwagê przy ocenie jakoœci
+modelu. Naszym celem jest uzyskanie modelu, który radzi sobie dobrze ''nowymi danymi'' czyli takimi, które nie by³y prezentowane podczas uczenia siê. O takim
+modelu mówimy, ¿e ma dobr¹ zdolnoœæ do generalizacji. Do dyspozycji mamy 
+nastêpuj¹ce metody: 
 
+\begin{itemize}
+\item {\bf Jednokrotny podzia³} (ang. {\em Hold-out)}. W tej metodzie dokonujemy losowego podzia³u przyk³adów na dwie grupy, z których jedna bêdzie u¿ywana w procesie nauczania a
+druga do oceny uzyskanego modelu. Typowe proporcje wynosz¹ $70\%$ dla zbioru
+trenuj¹cego i $30\%$ dla testowego. Metoda ta sprawdza siê dla stosunkowo du¿ych
+zbiorów danych. Jej wad¹ jest to, ¿e byæ mo¿e istotne informacje ze zbioru 
+testowego nie mog¹ byæ wykorzystane w procesie uczenia siê.
+
+\item {\bf Ocena krzy¿owa}. 
+\item {\bf Skrajna ocena krzy¿owa}
+
+\end{itemize}
 
 \subsection{Aproksymator CMAC}
 Struktura aproksymatora CMAC 
 
 \section{Szczegó³y projektu}
-\subsection{Dane  fw wrf w ftrenuj¹ce}
+\subsection{Dane}
 Procesy uczenia siê i oceny jakoœci klasyfikatora wymagaj¹ z oczywistych 
 wzglêdów dostatecznej liczby przyk³adów. Najprostsze jest u¿ycie pewnej znanej
 funkcji do wygenerowania wymaganej liczby przyk³adów. Nieco bardziej miarodajne
