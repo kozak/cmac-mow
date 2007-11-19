@@ -154,7 +154,26 @@ Zasadê dzia³ania CMACa naj³atwiej wyjaœniæ na przypadku jednowymiarowym
 (jedno wejœcie, jedno wyjœcie). Przejœcie do przypadku z wektorem wejœæ 
 o wiêkszej iloœci elementów nie nastrêcza trudnoœci. Za³ó¿my ¿e rozpatrywany
 atrybut $\phi_0(x) \in (\phi_1^0, \phi_2^0]$. Podzielmy przedzia³ do którego 
-nale¿y $\phi_0(x)$ na $m_0$ przyleg³ych podprzedzia³ów o równych d³ugoœciach. Zauwa¿my ¿e z ka¿dym przyk³adem $x$ mo¿emy zwi¹zaæ przedzia³ do którego ``wpada'' $x$ ze wzglêdu na atrybut $\phi_0(x)$. Dodatkowo zwi¹¿my 
+nale¿y $\phi_0(x)$ na $m_0$ przyleg³ych podprzedzia³ów o równych d³ugoœciach. Zauwa¿my ¿e z ka¿dym przyk³adem $x$ mo¿emy zwi¹zaæ przedzia³ do którego ``wpada'' $x$ ze wzglêdu na atrybut $\phi_0(x)$. Dodatkowo zwi¹¿my z ka¿dym przedzia³em parametr rzeczywisty oznaczaj¹cy wagê. Utwórzmy teraz 2 kolejne podzia³y (warstwy), lecz tym razem wprowadŸmy przesuniêcie pocz¹tku 
+podzia³u, jak na rysunku \ref{fig:przedzialy}. Zauwa¿my, ¿e teraz wartoœæ 
+atrybutu determinuje 3 aktywne przedzia³y, po jednym dla ka¿dej warstwy.
+Wielkoœæ wzglêdnego przesuniêcia kolejnej warstwy jest dobierana zwykle w nastêpuj¹cy sposób \cite{cichosz2000sus}:
+\begin{align}
+	\delta = \frac{d}{L}
+\end{align}
+gdzie $d$ jest szerokoœci¹ przedzia³u w pierwszej warstwie a $L$ liczb¹ warstw.
+W ten sposób, podzia³y w warstwie $l$ bêd¹ przesuniête o $\delta$ w stosunku do
+warstwy $l - 1$.
+Warto zauwa¿yæ, ¿e przy podziale pierwszej warstwy na $n$ przedzia³ów, ka¿da
+kolejna warstwa bêdzie podzielona na $n + 1$ przedzia³ów. 
+
+Obliczenie wyjœcia dla aproksymatora jest proste i sprowadza siê do dodania
+wag zwi¹zanych z przedzia³ami aktywowanymi przez dane wejœcie. Dla przyk³adu z 
+rysunku \ref{fig:przedzialy} bêdzie to:
+
+\begin{align*}
+	h(x) = w_2 + w_8 + w_{13}.
+\end{align*}
 
 \begin{figure}[h]
 \centering
@@ -162,6 +181,10 @@ nale¿y $\phi_0(x)$ na $m_0$ przyleg³ych podprzedzia³ów o równych d³ugoœciach. Za
 \caption{Aktywne przedzia³y dla zadanej wartoœci atrybutu}
 \label{fig:przedzialy}
 \end{figure}
+
+Uogólnienie przedstawionej idei na n-wymiarowy wektor atrybutów nie jest skomplikowane. W szczególnoœci, dotychczasowy podzia³ na przedzia³y
+bêdzie zast¹piony podzia³em n-wymiarowej przestrzeni na hiperszeœciany pe³ni¹ce
+funkcje przedzia³ów.
 
 \subsubsection{Uczenie siê}
 
