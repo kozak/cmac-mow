@@ -81,6 +81,7 @@ przyjmujemy jako
 
 \begin{align}
 	e^f_P(h) = \frac{1}{|P|}\sum_{x\in P}(f(x)-h(x))^2.
+	\label{eq:blad}
 \end{align}
 
 Minimalizacja tak zdefiniowanej funkcji b³êdu odbywa siê poprzez aktualizacjê
@@ -207,11 +208,61 @@ ca³ego zbioru treningowego dokonaæ sumarycznej zmiany wag.
 \subsubsection{Szczegó³y implementacyjne}
 Istotnym pytaniem, jakie mo¿e siê nasun¹æ podczas rozwa¿añ na temat 
 implementacji aproksymatora CMAC jest to, w jaki sposób przechowywane s¹ wagi.
+Podejœcie naiwne, polegaj¹ce na przechowywaniu w pamiêci wielowymiarowej tablicy
+liczb rzeczywistych jest zwykle nie do zrealizowania \cite{smith1998imc}.
+Przybli¿ona liczba wag przechowywanych wag mo¿e byæ obliczona ze wzoru:
+
+\begin{align}
+	\frac{res^{(n_y)}}{n_a^{(n_y-1)}}
+\end{align}
+
+gdzie $res$ jest liczb¹ podzia³ów (zak³adamy sta³¹ dla ka¿dego atrybutu),
+$n_y$ liczb¹ wejœæ a $n_a$ liczb¹ warstw. Dla przyk³adowych wartoœci
+$res = 200$, $n_a = 10$, $n_y = 6$ wymagana liczba pamiêci to ok 
+2Gb.
+
+Aby rozwi¹zaæ ten problem u¿ywa siê tablic mieszaj¹cych (ang. {\em hash table}).
+Zjawisko kolizji jest ignorowane, gdy¿ przyk³ady tylko w czêœci pokrywaj¹
+przestrzeñ wejœciow¹, a co za tym idzie, aktywuj¹ tylko u³amek 
+potencjalnie mo¿liwych do wykorzystania wag. W przypadku kolizji, ta sama waga
+mo¿e byæ aktywowana przez dwa znacznie ró¿ni¹ce siê wektory wejœciowe. Zjawisko
+zwykle nie powoduje wiêkszych problemów. Analizê wp³ywu kodowania mieszaj¹cego
+na dzia³anie aproksymatora CMAC mo¿na znaleŸæ w \cite{wang1996hcc}.
 
 \subsubsection{Uwagi}
+Na koniec warto podkreœliæ kilka najistotniejszych cech aproksymatora CMAC:
+
+\begin{itemize}
+\item {\bf Szybkoœæ dzia³ania i uczenia siê}. Zarówno podczas uczenia siê, jak i w³aœciwego
+dzia³ania, jeden przyk³ad aktywuje stosunkowo niewielk¹ liczbê wag. Umo¿liwia to
+stosowanie CMAC'a w systemach on-line.
+\item {\bf Skoñczona przestrzeñ wejœciowa}. Dla ka¿dego atrybutu nale¿y okreœliæ 
+	skoñczony przedzia³, do którego bêd¹ nale¿a³y jego wartoœci.
+\item {\bf Dyskretyzacja przestrzeni wejœciowej}. Dla pewnego otoczenia punktu
+reprezentuj¹cego wektor wejœciowy, wyjœcie aproksymatora bêdzie sta³e.
+\item {\bf Generalizacja lokalna}. W przeciwieñstwie do perceptronu wielowarstwowego, CMAC posiada jedynie lokaln¹ zdolnoœæ do generalizacji. Oznacza to, ¿e aby uzyskaæ dobr¹ generalizacjê, przestrzeñ przyk³adów musi byæ stosunkowo równomiernie pokryta zbiorem trenuj¹cym. 
+\end{itemize}
 
 \section{SZCZEGÓ£Y PROJEKTU}
 \subsection{Cel projektu}
+Celem projektu jest zaimplementowanie w jêzyku R aproksymatora CMAC oraz
+porównanie z trzema innymi aproksymatorami, dostêpnymi w R:
+
+\begin{itemize}
+\item aproksymatorem liniowym (pakiet \em{stats}, funkcje \em{lm}, \em{glm}),
+\item perceptronem wielowarstwowym (pakiet \em{nnet}),
+\item maszyn¹ wektorów noœnych (pakiet \em{e1071}).
+\end{itemize}
+
+Aproksymator CMAC bêdzie uczony zgodnie z omówionym uprzednio algorytmem, natomiast pozosta³e aproksymatory bêd¹ uczone za pomoc¹ w³aœciwych dla siebie 
+metod, dostêpnych w wykorzystywanych pakietach (np. dla MLP bêdzie to 
+algorytm BFGS). 
+
+Rozpatrywany model CMAC, jak i pozosta³e modele posiadaj¹ wiele parametrów od których zale¿y pomyœlnoœæ wykonania za³o¿onych celów. Zostan¹ przeprowadzone 
+eksperymenty maj¹ce wy³oniæ jak najlepsze wartoœci tych parametrów dla konkretnego problemu. W przypadku, gdy liczba parametrów nie jest du¿a (np. dwa)
+mo¿na bêdzie zastosowaæ jedno z omawianych wczeœniej kryteriów oceny modelu, w
+zale¿noœci od rozmiaru prezentowanego zbioru danych.
+
 \subsection{Dane}
 Procesy uczenia siê i oceny jakoœci klasyfikatora wymagaj¹ z oczywistych 
 wzglêdów dostatecznej liczby przyk³adów. Najprostsze jest u¿ycie pewnej znanej
@@ -219,20 +270,46 @@ funkcji do wygenerowania wymaganej ich liczby. Nieco bardziej miarodajne
 mo¿e byæ u¿ycie przyk³adów uzyskanych z komputerowej symulacji jakiegoœ procesu.
 Obie te metody maj¹ tê zaletê, ¿e liczba wygenerowanych przyk³adów nigdy nie 
 jest zbyt ma³a. Jednak du¿o bardziej wymagaj¹cym, a jednoczeœnie ciekawszym 
-badawczo podejœciem jest testowanie na ``rzeczywistych'' danych i takie w³aœnie
+badawczo podejœciem jest testowanie na ``rzeczywistych'' danych i g³ównie takie
 dane zostan¹ wykorzystane w projekcie. Zestawy przyk³adów bêd¹ pochodziæ z
 ogólnodostêpnych repozytoriów \cite{Asuncion+Newman:2007,guvenir2000buf}.
 
-Ze wzglêdu na uprzednio zasygnalizowane problemy, wybrane zostan¹ zestawy
-przyk³adów wœród których nie wystêpuj¹ atrybuty nominalne i porz¹dkowe 
-(zgodnie z sugesti¹ prowadz¹cego projekt)
+Ze wzglêdu na uprzednio zasygnalizowane problemy, wybrane zosta³o piêæ zestawów
+przyk³adów wœród których nie wystêpuj¹ atrybuty nominalne i porz¹dkowe, lub
+stanowi¹ niewielk¹ czêœæ wszystkich atrybutów (zgodnie z sugesti¹ prowadz¹cego projekt): 
+
+\begin{itemize}
+\item {\bf Weather Ankara}. Dane ze stacji pogodowej w Ankarze. 10 atrybutów 
+	ci¹g³ych, atrybutem przewidywanym jest œrednia temperatura. Liczba elementów w zbiorze: 1609. Zbiór atrakcyjny ze wzglêdu na jedynie ci¹g³e atrybuty i brak 
+nieznanych wartoœci.
+
+\item {\bf Pollution}. Dane na temat zanieczyszczenia œrodowiska. 15 atrybutów
+ci¹g³ych, wartoœci¹ przewidywan¹ jest œmiertelnoœæ. Liczba elementów w zbiorze: 60.
+\item {\bf Stock Prices}. Codzienne notowania gie³dowe dotycz¹ce 10 spó³ek zwi¹zanych z lotnictwem. Przewidywan¹ wartoœci¹ jest cena spó³ki numer 10. 
+Liczba elementów w zbiorze: 950.
+
+\item {\bf Auto-Mpg}. Dane na temat samochodów. 4 atrybuty ci¹g³e, 2 porz¹dkowe, 1 nominalny, wartoœci¹ przewidywan¹ jest zu¿ycie paliwa wyra¿one w galonach na
+milê. Liczba elementów w zbiorze: 398
+
+\item {\bf Fat}. Dane pacjentów. 17 atrybutów ci¹g³ych, wartoœci¹ przewidywan¹ 
+jest wzrost. Liczba elementów w zbiorze: 252.
+
+Wybrane zbiory nie posiadaj¹ brakuj¹cych wartoœci, prawdopodobnie nie bêdzie wiêc konieczna wstêpna obróbka danych. W wypadku zestawu Auto-mpg bêdzie konieczna transformacja atrybutu nominalnego.
+\end{itemize}
 
 \subsection{Testy}
 \subsubsection{Zdolnoœæ generalizacji}
+Podstawowym kryterium oceny aproksymatorów bêdzie zdolnoœæ do generalizacji. 
+Na pocz¹tku dokonany zostanie wybór architektury aproksymatorów dla konkretnego zestawu danych (np. iloœæ neuronów warstwy ukrytej dla MLP) metod¹ zale¿n¹ od iloœci przyk³adów. Nastêpnie 
+zbiór przyk³adów zostanie podzielony na czêœæ treningow¹ i testow¹.
+Porównywane modele zostan¹ nauczone u¿ywaj¹c zbioru treningowego, a nastêpnie
+z u¿yciem zbioru testowego zostanie policzony b³¹d wzglêdny zgodnie z równaniem
+\ref{eq:blad}. Im mniejszy b³¹d tym lepiej radzi sobie z generalizacj¹ dany klasyfikator.
+
 \subsubsection{Szybkoœæ uczenia siê}
 W wielu zastosowaniach szybkoœæ uczenia siê jest cech¹ drugorzêdn¹ je¿eli chodzi
-o kryterium wyboru takiego czy innego aproksymatora. Dlatego 
-
+o kryterium wyboru takiego czy innego aproksymatora. Dlatego te¿ zostanie zmierzony i porównany czas uczenia siê poszczególnych aproksymatorów dla 
+kolejnych zestawów treningowych.
 
 \bibliography{mow}
 \end{document}
