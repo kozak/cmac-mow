@@ -187,7 +187,28 @@ bêdzie zast¹piony podzia³em n-wymiarowej przestrzeni na hiperszeœciany pe³ni¹ce
 funkcje przedzia³ów.
 
 \subsubsection{Uczenie siê}
+Algorytm uczenia dla aproksymatora CMAC w swojej podstawowej wersji jest
+bardzo prosty. Na pocz¹tek nale¿y wybraæ pocz¹tkow¹ wartoœæ wag. 
+Mog¹ to byæ wartoœi wylosowane z jakiegoœ przedzia³u. Podajemy teraz na 
+wejœcie aproksymatora przyk³ad $x_i$, co aktywuje $n$ wag, a na wyjœciu
+otrzymujemy wartoœæ $y_i$. Chcemy, aby dla przyk³adu $x_i$ wyjœcie 
+aproksymatora mia³o wartoœæ $t_i$, zmieniamy wiêc aktywne wagi zgodnie ze
+wzorem:
 
+\begin{align}
+	w_i \gets w_i + \frac{\alpha}{n}(t_i - x_i)
+\end{align}
+
+gdzie $\alpha$ oznacza wspó³czynnik uczenia siê. Aby unikn¹æ 
+wp³ywu kolejnoœci podawania przyk³adów na koñcow¹ wartoœæ wag, nale¿y
+zsumowaæ zmiany wag dla ka¿dego przyk³adu, a nastêpnie, po prezentacji
+ca³ego zbioru treningowego dokonaæ sumarycznej zmiany wag.
+
+\subsubsection{Szczegó³y implementacyjne}
+Istotnym pytaniem, jakie mo¿e siê nasun¹æ podczas rozwa¿añ na temat 
+implementacji aproksymatora CMAC jest to, w jaki sposób przechowywane s¹ wagi.
+
+\subsubsection{Uwagi}
 
 \section{SZCZEGÓ£Y PROJEKTU}
 \subsection{Cel projektu}
@@ -211,6 +232,7 @@ przyk³adów wœród których nie wystêpuj¹ atrybuty nominalne i porz¹dkowe
 \subsubsection{Szybkoœæ uczenia siê}
 W wielu zastosowaniach szybkoœæ uczenia siê jest cech¹ drugorzêdn¹ je¿eli chodzi
 o kryterium wyboru takiego czy innego aproksymatora. Dlatego 
+
 
 \bibliography{mow}
 \end{document}
