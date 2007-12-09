@@ -5,10 +5,12 @@ require(utils);require(stats);require(e1071);require(nnet);
 columnNames <- c("mpg", "cylinders", "displacement", "horsepower","weight", "acceleration", "model_year", "origin", "car name");
 
 ## create data frame from the file
-carsmpg<- read.table("data/auto-mpg.data", col.names=columnNames);
+carsmpg<- read.table("data/auto-mpg.data", col.names=columnNames, na.strings="?");
+a <- carsmpg[c(1,2,3,4,5),]
+
 
 ## create a linear model, using parameters from the auto mpg data
-carModel <- lm(mpg~cylinders+displacement+as.numeric(horsepower)+weight+acceleration+model_year, data=carsmpg);
+carModel <- lm(mpg~cylinders+displacement+horsepower+weight+acceleration+model_year, data=carsmpg);
 
 ## define a new car model, this one is a 2007 mercedes s500, model assigned to agree with the data in file
 newCar <- data.frame("cylinders" = 8, "displacement"=546.1, "horsepower"=388, "weight"=4310, "acceleration" = 5.44, "model_year" = 105);
