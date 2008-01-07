@@ -13,9 +13,13 @@ load_data = function() {
     for (varName in modelVars) {
         min = mins[[varName]]
         max = maxes[[varName]]
-        attrDescs[[varName]] = list(min = min, max = max, nDiv = 30)
+        attrDescs[[varName]] = list(min = min, max = max, nDiv = 50)
     }
 
     model = cmac(mpgPredForm, cars, 10, 3, attrDescs)
-    predict(model, cars[1,])
+    targetAttr = model$targetAttr
+    cat("target attr = ", targetAttr, "\n")
+    cat("carsmpg= ", cars[[targetAttr]], "\n")
+    train.cmac(model, cars, 0.1, 0.2)
+    predict(model, cars[10,])
 }
