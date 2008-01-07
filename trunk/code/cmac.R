@@ -40,11 +40,13 @@ cmac = function(formula, data, nLayers, nWeightBits, attrDescs, ...) {
 # targetMse - zadany błąd średniokwadratowy
 # tr - współczynnik uczenia się (training rate)
 train.cmac = function(cmac, data, targetMse, tr) {
-    desiredOutput = data[cmac$targetAttr]
+    cat("cmac$targetAttr = ", cmac$targetAttr, "\n")
+    desiredOutput = data[[cmac$targetAttr]]
+    cat("desired\n")
     newData = data[cmac$otherAttrs]
-    while ((currentMse = mse(data[cmac$targetAttr], (actualOutput = predict(cmac, newData)))) > targetMse) {
+    while ((currentMse = mse(desiredOutput, (actualOutput = predict(cmac, newData)))) > targetMse) {
         cat("Training, mse = ",  "\n")
-        for (example in 1:nrows(newData)) {
+        for (i in 1:nrows(newData)) {
             example = data[i, cmac$otherAttrs]
             cat("example$weight = ", example$weight, "\n")
             weightIndices = getHmWeightIndices(cmac, getWeightIndices(cmac, example));
@@ -97,7 +99,10 @@ getInterval = function(cmac, attrDesc, iLayer, input) {
         shift = (intervalWidth / cmac$nLayers) * iLayer;
         cat("shift = ", shift, "\n")
         inputPos = input - shift;
-        cat("shift = ", shift, "\n")
+        cat("inputPos = ", inputPos, "\n")
+        if (inputPos - attrDesc$min <= 0) {
+            return (0)
+        }
         return (ceiling((inputPos - attrDesc$min) / (attrDesc$max - attrDesc$min) * attrDesc$nDiv))
     }
 }
