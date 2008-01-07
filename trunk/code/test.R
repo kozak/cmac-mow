@@ -10,12 +10,12 @@ load_data = function() {
 
 
     attrDescs = list()
-    for (i in 1:length(modelVars)) {
-        varName = modelVars[i]
-        min = mins[varName]
-        max = maxes[varName]
+    for (varName in modelVars) {
+        min = mins[[varName]]
+        max = maxes[[varName]]
         attrDescs[[varName]] = list(min = min, max = max, nDiv = 30)
     }
 
-    model = cmac(mpgPredForm, cars, 10, 24, attrDescs)
+    model = cmac(mpgPredForm, cars, 10, 3, attrDescs)
+    predict(model, cars[1,])
 }
