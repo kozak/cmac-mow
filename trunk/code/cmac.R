@@ -45,11 +45,8 @@ train.cmac = function(cmac, data, targetMse, tr) {
     cat("desired\n")
     newData = data[cmac$otherAttrs]
 
-    actualOutput = zomg(cmac, newData)
-    cat("ac = ", actualOutput, "\n")
-    xx = mse(desiredOutput, (actualOutput = zomg(cmac, newData)))
     cat("xx = ", xx, "\n")
-    while ((currentMse = mse(desiredOutput, (actualOutput = zomg(cmac, newData)))) > targetMse) {
+    while ((currentMse = mse(desiredOutput, (actualOutput = predict.cmac(cmac, newData)))) > targetMse) {
         cat("Training, mse = ",  "\n")
         for (i in 1:nrows(newData)) {
             example = data[i, cmac$otherAttrs]
@@ -62,8 +59,8 @@ train.cmac = function(cmac, data, targetMse, tr) {
     cmac
 }
 
-zomg = function(cmac, newData) {
-    cat("zomg, cmac$nLayers = ", cmac$nLayers, "\n")
+predict.cmac = function(cmac, newData) {
+    cat("predict.cmac, cmac$nLayers = ", cmac$nLayers, "\n")
     hmWeightIndices = getHmWeightIndices(cmac, newData)
     sum(cmac$weights[hmWeightIndices])
 }
