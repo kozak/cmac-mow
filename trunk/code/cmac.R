@@ -16,7 +16,7 @@ source("common.R")
 #   attrDesc = list()
 #   attrDesc$mpg = list(min = 10, max = 20, nDiv = 10)
 #   attrDesc$weight = list(min = 100, max = 500, nDiv = 20)
-cmac = function(formula, data, nLayers, nWeightBits, attrDescs, ...) {
+create.cmac = function(formula, data, nLayers, nWeightBits, attrDescs, ...) {
     if (missing(data)) {
         data = environment(formula)
     }
@@ -28,7 +28,7 @@ cmac = function(formula, data, nLayers, nWeightBits, attrDescs, ...) {
     cmac$nWeightBits = nWeightBits
     cmac$weights = rep(0, 2^nWeightBits)
 
-    cmac$targetAttr = attr(terms(formula, data=data), "variables")[[2]]
+    cmac$targetAttr = all.vars(formula)[[1]]
     cmac$otherAttrs = attr(terms(formula, data=data), "term.labels")
     cmac$attrDescs = attrDescs
     cmac
@@ -44,26 +44,32 @@ train.cmac = function(cmac, data, targetMse, tr) {
     desiredOutput = data[[cmac$targetAttr]]
     cat("desired\n")
     newData = data[cmac$otherAttrs]
-    while ((currentMse = mse(desiredOutput, (actualOutput = predict(cmac, newData)))) > targetMse) {
+
+    actualOutput = zomg(cmac, newData)
+    cat("ac = ", actualOutput, "\n")
+    xx = mse(desiredOutput, (actualOutput = zomg(cmac, newData)))
+    cat("xx = ", xx, "\n")
+    while ((currentMse = mse(desiredOutput, (actualOutput = zomg(cmac, newData)))) > targetMse) {
         cat("Training, mse = ",  "\n")
         for (i in 1:nrows(newData)) {
             example = data[i, cmac$otherAttrs]
             cat("example$weight = ", example$weight, "\n")
-            weightIndices = getHmWeightIndices(cmac, getWeightIndices(cmac, example));
-            # actualOutput = predict(cmac, example);
+            weightIndices = getHmWeightIndices(cmac, example);
             weightUpdate = (desiredOutput[i] - actualOutput) * tr / length(weightIndices)
             cmac$weights[weightIndices] = cmac$weights[weightIndices] + weightUpdate
         }
     }
+    cmac
 }
 
-predict.cmac = function(cmac, newData) {
-    weightIndices = getWeightIndices(cmac, newData)
+zomg = function(cmac, newData) {
+    cat("zomg, cmac$nLayers = ", cmac$nLayers, "\n")
     hmWeightIndices = getHmWeightIndices(cmac, newData)
     sum(cmac$weights[hmWeightIndices])
 }
 
 getWeightIndices = function(cmac, input) {
+    cat("cmac$nLayers = ", cmac$nLayers, "\n");
     weightIndices = vector("numeric", cmac$nLayers)
     for (i in 1:cmac$nLayers) {
         indices = list()
