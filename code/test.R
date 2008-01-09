@@ -20,7 +20,7 @@ load_sin = function() {
         attrDescs[[varName]] = list(min = min, max = max, nDiv = 20)
     }
 
-    model = create.cmac(predForm, dataFrame, 10, 24, attrDescs)
+    model = create.cmac(predForm, dataFrame, 10, 20, attrDescs)
     cat("created\n")
     model = train.cmac(model, dataFrame, 0.0001, 0.5)
 }
