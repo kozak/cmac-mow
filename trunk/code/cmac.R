@@ -44,16 +44,16 @@ train.cmac = function(cmac, data, targetMse, tr) {
     newData = data[cmac$otherAttrs]
 
     while ((currentMse = mse(desiredOutput, predict.cmac(cmac, newData))) > targetMse) {
-        cat("Training, mse = ", currentMse, "\n")
+        info("Training, mse = ", currentMse, "\n")
         flush.console()
         for (i in 1:nrow(newData)) {
             example = data[i, cmac$otherAttrs, drop=FALSE]
             actualOutput = predict.cmac(cmac, example)
             weightIndices = getHmWeightIndices(cmac, example);
-            cat("weights activated by input: ", weightIndices, "\n")
-            cat("desired output = ", desiredOutput[i], ", actual = ", actualOutput,"\n")
+            # cat("weights activated by input: ", weightIndices, "\n")
+            # cat("desired output = ", desiredOutput[i], ", actual = ", actualOutput,"\n")
             weightUpdate = (desiredOutput[i] - actualOutput) * tr / length(weightIndices)
-            cat("weight update = ", weightUpdate, "\n")
+            #cat("weight update = ", weightUpdate, "\n")
             cmac$weights[weightIndices] = cmac$weights[weightIndices] + weightUpdate
         }
     }
@@ -64,12 +64,12 @@ predict.cmac = function(cmac, newData) {
     output = vector("numeric", nrow(newData))
     for (i in 1:nrow(newData)) {
         hmWeightIndices = getHmWeightIndices(cmac, newData[i,,drop=FALSE])
-        cat("predict: hmWeightIndices = ", hmWeightIndices, "\n")
-        cat("cmacweights$hmWeightIndices = ", cmac$weights[hmWeightIndices], "\n")
+        # cat("predict: hmWeightIndices = ", hmWeightIndices, "\n")
+        # cat("cmacweights$hmWeightIndices = ", cmac$weights[hmWeightIndices], "\n")
 
         output[i] = sum(cmac$weights[hmWeightIndices])
     }
-    cat("prediction output = ", output, "\n")
+    # cat("prediction output = ", output, "\n")
     output
 }
 
@@ -112,6 +112,7 @@ getInterval = function(cmac, attrDesc, iLayer, input) {
 }
 
 getWeightIndex = function(cmac, intervals) {
+    debug_enter("getWeightIndex")
     index = 0
     multiplier = 1
     for (i in 1:length(intervals)) {
@@ -120,5 +121,6 @@ getWeightIndex = function(cmac, intervals) {
         multiplier = multiplier * (cmac$attrDescs)[[i]][["nDiv"]]
     }
     index
+    debug_ret("getWeightIndex")
 }
 
