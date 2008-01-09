@@ -1,7 +1,8 @@
 # Liczy błąd średniokwadratowy dla modelu i oczekiwanych wyjść
 
-mse = function(model, input, desiredOutput) {
-    actualOutput = predict(model, input)
+mse = function(desiredOutput, actualOutput) {
     error = desiredOutput - actualOutput;
-    mean(error * error)
+    mse = mean(error * error)
+    cat("mse = ", mse, "\n")
+    mse
 }
