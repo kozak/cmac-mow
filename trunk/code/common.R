@@ -6,3 +6,12 @@ mse = function(desiredOutput, actualOutput) {
     cat("mse = ", mse, "\n")
     mse
 }
+
+debug = function() {
+
+}
+
+debug_enter = function() {
+
+}
+info

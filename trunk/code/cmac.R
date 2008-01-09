@@ -52,7 +52,8 @@ train.cmac = function(cmac, data, targetMse, tr) {
             weightIndices = getHmWeightIndices(cmac, example);
             cat("weights activated by input: ", weightIndices, "\n")
             cat("desired output = ", desiredOutput[i], ", actual = ", actualOutput,"\n")
-            weightUpdate = (desiredOutput[i] - actualOutput[i]) * tr / length(weightIndices)
+            weightUpdate = (desiredOutput[i] - actualOutput) * tr / length(weightIndices)
+            cat("weight update = ", weightUpdate, "\n")
             cmac$weights[weightIndices] = cmac$weights[weightIndices] + weightUpdate
         }
     }
@@ -63,8 +64,12 @@ predict.cmac = function(cmac, newData) {
     output = vector("numeric", nrow(newData))
     for (i in 1:nrow(newData)) {
         hmWeightIndices = getHmWeightIndices(cmac, newData[i,,drop=FALSE])
+        cat("predict: hmWeightIndices = ", hmWeightIndices, "\n")
+        cat("cmacweights$hmWeightIndices = ", cmac$weights[hmWeightIndices], "\n")
+
         output[i] = sum(cmac$weights[hmWeightIndices])
     }
+    cat("prediction output = ", output, "\n")
     output
 }
 
