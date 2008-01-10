@@ -77,6 +77,7 @@ predict.cmac = function(cmac, newData) {
         output[i] = sum(cmac$weights[hmWeightIndices])
     }
     # cat("prediction output = ", output, "\n")
+    debug("predicted output = ", output)
     debug_ret("predict.cmac")
     output
 }
@@ -90,9 +91,10 @@ getWeightIndices = function(cmac, input) {
         for (attrName in cmac$otherAttrs) {
             indices[[attrName]] = getInterval(cmac$nLayers, cmac$attrDescs[[attrName]], i, input[[attrName]])
         }
-        weightIndices[i] = getWeightIndex(cmac, indices)
+        weightIndices[i + 1] = getWeightIndex(cmac, indices)
     }
 
+    debug("Weight indices = ", weightIndices)
     debug_ret("getWeightIndices")
     weightIndices
 }
@@ -105,37 +107,58 @@ getHmWeightIndices = function(cmac, data) {
         weightIndices[i + 1] = hash(weightIndices[i + 1], i, cmac$nWeightBits) + 1
     }
 
+    debug("Weight indices in hashmap = ", weightIndices)
     debug_ret("getHmWeightIndices")
     weightIndices
 }
 
 getInterval = function(nLayers, attrDesc, iLayer, input) {
     debug_enter("getInterval")
+    debug("getInterval layer = ", iLayer, ", input = ", input, "(min = ", attrDesc$min, ", max = ", attrDesc$max, 
+        ", ndiv = ", attrDesc$nDiv) 
+        
 
     if (iLayer == 0) {
         if (input == attrDesc$max) {
+            interval = attrDesc$nDiv - 1
+            debug("interval = ", interval)
             debug_ret("getInterval")
-            return (attrDesc$nDiv - 1)
+            return (interval)
 
         }
+
+        interval = floor((input - attrDesc$min) / (attrDesc$max - attrDesc$min) * attrDesc$nDiv)
+        debug("interval = ", interval)
         debug_ret("getInterval")
-        return (floor((input - attrDesc$min) / (attrDesc$max - attrDesc$min) * attrDesc$nDiv))
+        return (interval)
     } else {
         intervalWidth = (attrDesc$max - attrDesc$min) / attrDesc$nDiv
         shift = (intervalWidth / nLayers) * iLayer;
         inputPos = input - shift;
         
         if ((inputPos - attrDesc$min) <= 0) {
+            debug("interval = ", 0)
             debug_ret("getInterval")
             return (0)
         }
+        interval =  ceiling((inputPos - attrDesc$min) / (attrDesc$max - attrDesc$min) * attrDesc$nDiv)
+        debug("interval = ", interval)
         debug_ret("getInterval")
-        return (ceiling((inputPos - attrDesc$min) / (attrDesc$max - attrDesc$min) * attrDesc$nDiv))
+        return (interval)
     }
 }
 
 getWeightIndex = function(cmac, intervals) {
     debug_enter("getWeightIndex")
+    
+    msg = NULL
+    if (debugEnable) {
+        for (name in names(intervals)) {
+            msg = c(msg, name, "= ", intervals[[name]], " ")
+        }
+        debug("intervals: ", msg)
+    }
+    
     index = 0
     multiplier = 1
     for (i in 1:length(intervals)) {
@@ -143,6 +166,7 @@ getWeightIndex = function(cmac, intervals) {
         index = index + (intervals[[i]] * multiplier)
         multiplier = multiplier * (cmac$attrDescs)[[i]][["nDiv"]]
     }
+    debug("Weight index = ", index)
     debug_ret("getWeightIndex")
     index
 }
