@@ -15,10 +15,16 @@ debug_enable = function() {
     callStackCnt <<- 0
 }
 
+debug_disable = function() {
+    debugEnable <<- FALSE
+    callStackCnt <<- 0
+}
+
 debug = function(...) {
     if (debugEnable) {
         mkindent()
-        cat("DEBUG:", ..., "\n")
+        cat("DEBUG:", c(...), "\n")
+        flush.console()
     }
 }
 
@@ -26,15 +32,17 @@ debug_enter = function(fname) {
     if (debugEnable) {
         callStackCnt <<- callStackCnt + 1
         mkindent()
-        cat("DEBUG: --->>> entering ", fname, "() \n")
+        cat("DEBUG: --->>> entering ", fname, "()\n")
+        flush.console()
     }
 }
 
 debug_ret = function(fname) {
     if (debugEnable) {
         mkindent()
-        cat("DEBUG: <<<--- leaving ", fname, "() \n")
+        cat("DEBUG: <<<--- leaving ", fname, "()\n")
         callStackCnt <<- callStackCnt - 1
+        flush.console()
     }
 }
 
@@ -45,6 +53,6 @@ info = function(...) {
 
 mkindent = function() {
     for (i in 1:callStackCnt) {
-        cat("\t")
+        cat(" ")
     }
 }

@@ -17,6 +17,7 @@ source("common.R")
 #   attrDesc$mpg = list(min = 10, max = 20, nDiv = 10)
 #   attrDesc$weight = list(min = 100, max = 500, nDiv = 20)
 create.cmac = function(formula, data, nLayers, nWeightBits, attrDescs, ...) {
+    debug_enter("crete.cmac()")
     if (missing(data)) {
         data = environment(formula)
     }
@@ -31,6 +32,8 @@ create.cmac = function(formula, data, nLayers, nWeightBits, attrDescs, ...) {
     cmac$targetAttr = all.vars(formula)[[1]]
     cmac$otherAttrs = attr(terms(formula, data=data), "term.labels")
     cmac$attrDescs = attrDescs
+
+    debug_ret("create_cmac()")
     cmac
 }
 
@@ -40,6 +43,8 @@ create.cmac = function(formula, data, nLayers, nWeightBits, attrDescs, ...) {
 # targetMse - zadany błąd średniokwadratowy
 # tr - współczynnik uczenia się (training rate)
 train.cmac = function(cmac, data, targetMse, tr) {
+    debug_enter("train.cmac")
+
     desiredOutput = data[[cmac$targetAttr]]
     newData = data[cmac$otherAttrs]
 
@@ -57,10 +62,12 @@ train.cmac = function(cmac, data, targetMse, tr) {
             cmac$weights[weightIndices] = cmac$weights[weightIndices] + weightUpdate
         }
     }
+    debug_ret("train.cmac")
     cmac
 }
 
 predict.cmac = function(cmac, newData) {
+    debug_enter("predict.cmac")
     output = vector("numeric", nrow(newData))
     for (i in 1:nrow(newData)) {
         hmWeightIndices = getHmWeightIndices(cmac, newData[i,,drop=FALSE])
@@ -70,43 +77,59 @@ predict.cmac = function(cmac, newData) {
         output[i] = sum(cmac$weights[hmWeightIndices])
     }
     # cat("prediction output = ", output, "\n")
+    debug_ret("predict.cmac")
     output
 }
 
 getWeightIndices = function(cmac, input) {
+    debug_enter("getWeightIndices")
+
     weightIndices = vector("numeric", cmac$nLayers)
     for (i in 0:(cmac$nLayers - 1)) {
         indices = list()
         for (attrName in cmac$otherAttrs) {
-            indices[[attrName]] = getInterval(cmac, cmac$attrDescs[[attrName]], i, input[[attrName]])
+            indices[[attrName]] = getInterval(cmac$nLayers, cmac$attrDescs[[attrName]], i, input[[attrName]])
         }
         weightIndices[i] = getWeightIndex(cmac, indices)
     }
+
+    debug_ret("getWeightIndices")
     weightIndices
 }
 
 getHmWeightIndices = function(cmac, data) {
+    debug_enter("getHmWeightIndices")
+
     weightIndices = getWeightIndices(cmac, data)
     for (i in 0:(cmac$nLayers - 1)) {
         weightIndices[i + 1] = hash(weightIndices[i + 1], i, cmac$nWeightBits) + 1
     }
+
+    debug_ret("getHmWeightIndices")
     weightIndices
 }
 
-getInterval = function(cmac, attrDesc, iLayer, input) {
+getInterval = function(nLayers, attrDesc, iLayer, input) {
+    debug_enter("getInterval")
+
     if (iLayer == 0) {
         if (input == attrDesc$max) {
-            return (attrDesc$nDiv)
+            debug_ret("getInterval")
+            return (attrDesc$nDiv - 1)
+
         }
+        debug_ret("getInterval")
         return (floor((input - attrDesc$min) / (attrDesc$max - attrDesc$min) * attrDesc$nDiv))
     } else {
         intervalWidth = (attrDesc$max - attrDesc$min) / attrDesc$nDiv
-        shift = (intervalWidth / cmac$nLayers) * iLayer;
+        shift = (intervalWidth / nLayers) * iLayer;
         inputPos = input - shift;
         
         if ((inputPos - attrDesc$min) <= 0) {
+            debug_ret("getInterval")
             return (0)
         }
+        debug_ret("getInterval")
         return (ceiling((inputPos - attrDesc$min) / (attrDesc$max - attrDesc$min) * attrDesc$nDiv))
     }
 }
@@ -120,7 +143,7 @@ getWeightIndex = function(cmac, intervals) {
         index = index + (intervals[[i]] * multiplier)
         multiplier = multiplier * (cmac$attrDescs)[[i]][["nDiv"]]
     }
-    index
     debug_ret("getWeightIndex")
+    index
 }
 
