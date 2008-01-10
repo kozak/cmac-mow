@@ -49,3 +49,11 @@ load_data = function() {
 xf = function(li) {
     li[[1]] = 1
 }
+
+testGetInterval = function() {
+    x = seq(1,6, 0.25)
+    attrDescx = list(min = 1, max = 6, nDiv = 5)
+    for (i in x) {
+        cat("input = ", i, ", interval = ", getInterval(3, attrDescx, 1, i), "\n")
+    }
+}
