@@ -26,7 +26,9 @@ load_sin = function() {
 }
 
 load_data = function() {
+    debug_disable()
     cars = na.omit(read.table("data/auto-mpg.data", header=TRUE, na.strings="?"))
+    cars = cars[sample(1:nrow(cars)),]
     mpgPredForm = mpg ~ . - name
     formTerms = terms(mpgPredForm, data=cars)
     modelVars = attr(formTerms, "term.labels")
@@ -38,11 +40,11 @@ load_data = function() {
     for (varName in modelVars) {
         min = mins[[varName]]
         max = maxes[[varName]]
-        attrDescs[[varName]] = list(min = min, max = max, nDiv = 50)
+        attrDescs[[varName]] = list(min = min, max = max, nDiv = 10)
     }
 
-    model = create.cmac(mpgPredForm, cars, 10, 24, attrDescs)
-    model = train.cmac(model, cars[1:10,], 0.0001, 0.5)
+    model = create.cmac(mpgPredForm, cars, 15, 20, attrDescs)
+    model = train.cmac(model, cars[1:100,], 0.0001, 0.5)
     model
 }
 
