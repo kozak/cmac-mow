@@ -26,7 +26,6 @@ load_sin = function() {
 }
 
 load_data = function() {
-    debug_disable()
     cars = na.omit(read.table("data/auto-mpg.data", header=TRUE, na.strings="?"))
     cars = cars[sample(1:nrow(cars)),]
     mpgPredForm = mpg ~ . - name

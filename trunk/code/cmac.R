@@ -70,7 +70,8 @@ predict.cmac = function(cmac, newData) {
     debug_enter("predict.cmac")
     output = vector("numeric", nrow(newData))
     for (i in 1:nrow(newData)) {
-        hmWeightIndices = getHmWeightIndices(cmac, newData[i,,drop=FALSE])
+        hmWeightIndices = getHmWeightIndices(cmac$nLayers, cmac$nWeightBits, 
+            cmac$otherAttrs, cmac$attrDescs, newData[i,,drop=FALSE])
         # cat("predict: hmWeightIndices = ", hmWeightIndices, "\n")
         # cat("cmacweights$hmWeightIndices = ", cmac$weights[hmWeightIndices], "\n")
 
@@ -82,16 +83,16 @@ predict.cmac = function(cmac, newData) {
     output
 }
 
-getWeightIndices = function(cmac, input) {
+getWeightIndices = function(nLayers, nWeightBits, otherAttrs, attrDescs, input) {
     debug_enter("getWeightIndices")
-
-    weightIndices = vector("numeric", cmac$nLayers)
-    for (i in 0:(cmac$nLayers - 1)) {
+    debug("nLayers = ", nLayers)
+    weightIndices = vector("numeric", nLayers)
+    for (i in 0:(nLayers - 1)) {
         indices = list()
-        for (attrName in cmac$otherAttrs) {
-            indices[[attrName]] = getInterval(cmac$nLayers, cmac$attrDescs[[attrName]], i, input[[attrName]])
+        for (attrName in otherAttrs) {
+            indices[[attrName]] = getInterval(nLayers, attrDescs[[attrName]], i, input[[attrName]])
         }
-        weightIndices[i + 1] = getWeightIndex(cmac, indices)
+        weightIndices[i + 1] = getWeightIndex(otherAttrs, attrDescs, indices)
     }
 
     debug("Weight indices = ", weightIndices)
@@ -99,12 +100,12 @@ getWeightIndices = function(cmac, input) {
     weightIndices
 }
 
-getHmWeightIndices = function(cmac, data) {
+getHmWeightIndices = function(nLayers, nWeightBits, otherAttrs, attrDescs, data) {
     debug_enter("getHmWeightIndices")
 
-    weightIndices = getWeightIndices(cmac, data)
-    for (i in 0:(cmac$nLayers - 1)) {
-        weightIndices[i + 1] = hash(weightIndices[i + 1], i, cmac$nWeightBits) + 1
+    weightIndices = getWeightIndices(nLayers, nWeightBits, otherAttrs, attrDescs, data)
+    for (i in 0:(nLayers - 1)) {
+        weightIndices[i + 1] = hash(weightIndices[i + 1], i, nWeightBits) + 1
     }
 
     debug("Weight indices in hashmap = ", weightIndices)
@@ -148,7 +149,7 @@ getInterval = function(nLayers, attrDesc, iLayer, input) {
     }
 }
 
-getWeightIndex = function(cmac, intervals) {
+getWeightIndex = function(otherAttrs, attrDescs, intervals) {
     debug_enter("getWeightIndex")
     
     msg = NULL
@@ -162,9 +163,9 @@ getWeightIndex = function(cmac, intervals) {
     index = 0
     multiplier = 1
     for (i in 1:length(intervals)) {
-        name = cmac$otherAttrs[i]
+        name = otherAttrs[i]
         index = index + (intervals[[i]] * multiplier)
-        multiplier = multiplier * (cmac$attrDescs)[[i]][["nDiv"]]
+        multiplier = multiplier * (attrDescs)[[i]][["nDiv"]]
     }
     debug("Weight index = ", index)
     debug_ret("getWeightIndex")
