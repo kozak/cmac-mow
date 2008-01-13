@@ -1,6 +1,7 @@
 source("cmac.R")
 
 load_sin = function() {
+    debug_disable()
     x = seq(-pi/2, pi/2, 0.1)
     sinx = sin(x)
     dataFrame = data.frame(cbind(x,sinx))
