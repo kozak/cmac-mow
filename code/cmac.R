@@ -48,16 +48,19 @@ train.cmac = function(cmac, data, targetMse, tr) {
     desiredOutput = data[[cmac$targetAttr]]
     newData = data[cmac$otherAttrs]
 
-    while ((currentMse = mse(desiredOutput, predict.cmac(cmac, newData))) > targetMse) {
+    actualOutput = NULL
+    currentMse = NULL
+    while ((currentMse = mse(desiredOutput, (actualOutput = predict.cmac(cmac, newData)))) > targetMse) {
         info("Training, mse = ", currentMse, "\n")
         flush.console()
         for (i in 1:nrow(newData)) {
             example = data[i, cmac$otherAttrs, drop=FALSE]
-            actualOutput = predict.cmac(cmac, example)
-            weightIndices = getHmWeightIndices(cmac, example);
+            #actualOutput = predict.cmac(cmac, example)
+            weightIndices = getHmWeightIndices(cmac$nLayers, cmac$nWeightBits, cmac$otherAttrs, 
+                cmac$attrDescs, example);
             # cat("weights activated by input: ", weightIndices, "\n")
             # cat("desired output = ", desiredOutput[i], ", actual = ", actualOutput,"\n")
-            weightUpdate = (desiredOutput[i] - actualOutput) * tr / length(weightIndices)
+            weightUpdate = (desiredOutput[i] - actualOutput[i]) * tr / length(weightIndices)
             #cat("weight update = ", weightUpdate, "\n")
             cmac$weights[weightIndices] = cmac$weights[weightIndices] + weightUpdate
         }
