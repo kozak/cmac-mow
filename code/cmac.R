@@ -86,7 +86,7 @@ predict.cmac = function(cmac, newData) {
     output
 }
 
-getWeightIndices = function(nLayers, nWeightBits, otherAttrs, attrDescs, input) {
+getWeightIndices = function(nLayers, otherAttrs, attrDescs, input) {
     debug_enter("getWeightIndices")
     debug("nLayers = ", nLayers)
     weightIndices = vector("numeric", nLayers)
@@ -106,7 +106,7 @@ getWeightIndices = function(nLayers, nWeightBits, otherAttrs, attrDescs, input) 
 getHmWeightIndices = function(nLayers, nWeightBits, otherAttrs, attrDescs, data) {
     debug_enter("getHmWeightIndices")
 
-    weightIndices = getWeightIndices(nLayers, nWeightBits, otherAttrs, attrDescs, data)
+    weightIndices = getWeightIndices(nLayers, otherAttrs, attrDescs, data)
     for (i in 0:(nLayers - 1)) {
         weightIndices[i + 1] = hash(weightIndices[i + 1], i, nWeightBits) + 1
     }
