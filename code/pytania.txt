@@ -1,0 +1,14 @@
+- Jak dobraæ wartoœæ MSE przy uczeniu siê? Czy mo¿e ona byæ dobrana np. jako u³amek wartoœci œredniej 
+    atrybutu docelowego? Czy wprowadziæ jakieœ inne kryterium zatrzymania?
+- Czy przy uczeniu siê aproksymatorów mo¿na zastosowaæ nastêpuj¹cy schemat:
+    * Podzia³ na 3 zbiory: treninuj¹cy, walidacyjny, testowy
+    * Dla ka¿dego typu aproksymatora wybraæ najlepszy za pomoc¹ pierwszych dwóch
+    * Porównaæ typy za pomoc¹ 3 zbioru
+- Czy w poprzedniej metodzie mo¿na zast¹piæ dzielenie na 3 zbiory dzieleniem w stosunku 2:1 i u¿ycie
+    k-fold CV
+- Jak dobraæ iloœæ podzia³ów pierwszej warstwy dla konkretnego atrybutu maj¹c na uwadzê iloœæ
+    warstw? Co zrobiæ, jeœli atrybut jest dyskretny?
+- Czy potrzebne jest skalowanie wejœæ dla sieci neuronowej
+- Co zrobiæ z wartoœciami NA
+- Jak porównywaæ prêdkoœæ gdy jest zale¿na od liczby warstw i np tego, ¿e SVM
+    jest napisany w c
