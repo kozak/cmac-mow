@@ -28,6 +28,7 @@ create.cmac = function(formula, data, nLayers, nWeightBits, attrDescs, ...) {
     cmac$nLayers = nLayers
     cmac$nWeightBits = nWeightBits
     cmac$weights = vector("numeric", 2^nWeightBits)
+    cmac$refWeights = vector("logical", 2^nWeightBits)
 
     cmac$targetAttr = all.vars(formula)[[1]]
     cmac$otherAttrs = attr(terms(formula, data=data), "term.labels")
@@ -63,6 +64,7 @@ train.cmac = function(cmac, data, targetMse, tr) {
             weightUpdate = (desiredOutput[i] - actualOutput[i]) * tr / length(weightIndices)
             #cat("weight update = ", weightUpdate, "\n")
             cmac$weights[weightIndices] = cmac$weights[weightIndices] + weightUpdate
+            cmac$refWeights[weightIndices] = TRUE
         }
     }
     debug_ret("train.cmac")
@@ -79,6 +81,8 @@ predict.cmac = function(cmac, newData) {
         # cat("cmacweights$hmWeightIndices = ", cmac$weights[hmWeightIndices], "\n")
 
         output[i] = sum(cmac$weights[hmWeightIndices])
+        refW = cmac$refWeights[hmWeightIndices]
+        debug("Referenced weights: ", length(refW[refW == TRUE]), "/", length(hmWeightIndices))
     }
     # cat("prediction output = ", output, "\n")
     debug("predicted output = ", output)

@@ -14,25 +14,20 @@ load_sin = function() {
     cat(mins, "\n")
     cat(maxes, "\n")
 
-    nDivL = list()
-    nDiv$cylinders = 2
-    ndiv$displacement = 10
-    nDiv$horsepower = 10
-    nDiv$weight = 160
-    ndiv$acceleration = 3
-    nDiv$modyear = 2
-    nDiv$origin = 2
-
     attrDescs = list()
     for (varName in modelVars) {
         min = mins[[varName]]
         max = maxes[[varName]]
-        attrDescs[[varName]] = list(min = min, max = max, nDiv = nDiv[[varName]])
+        attrDescs[[varName]] = list(min = min, max = max, nDiv = 10)
     }
 
     model = create.cmac(predForm, dataFrame, 20, 20, attrDescs)
     cat("created\n")
-    model = train.cmac(model, dataFrame, 0.0000001, 0.5)
+    model = train.cmac(model, dataFrame, 0.0001, 0.5)
+    
+    x2 = seq(-pi/2 + 0.05, pi/2, 0.1)
+    df2 = data.frame(x = x2, sinx = sin(x2))
+    list(comp = cbind(sin(x2), predict(model, df2)), mse = mse(sin(x2), predict(model, df2)))
 }
 
 load_data = function() {
@@ -45,13 +40,13 @@ load_data = function() {
     maxes = sapply(cars[modelVars], max)
 
     nDiv = list(
-    cylinders = 1,
+    cylinders = 2,
     displacement = 10,
     horsepower = 10,
     weight = 70,
-    acceleration = 1,
-    modyear = 1,
-    origin = 1)
+    acceleration = 2,
+    modyear = 2,
+    origin = 2)
 
     attrDescs = list()
     for (varName in modelVars) {
@@ -62,7 +57,7 @@ load_data = function() {
 
     model = create.cmac(mpgPredForm, cars, 10, 20, attrDescs)
     model = train.cmac(model, cars[1:200,], 0.01, 0.5)
-    model
+    list(cmac = model, testSet = cars[201:nrow(cars),])
 }
 
 
