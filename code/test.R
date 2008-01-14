@@ -154,3 +154,25 @@ test_nnet = function() {
     dataFrame2 = data.frame(cbind(x = x2, sinx = sinx2))
     cbind(sinx2, predict(net, dataFrame2))
 }
+
+load_weather = function() {
+    weather = na.omit(read.table("data/weather.data", header=TRUE, na.strings="?"))
+    weather = resample(weather)
+    mpgPredForm = meantemp ~ .
+    formTerms = terms(mpgPredForm, data=weather)
+    modelVars = attr(formTerms, "term.labels")
+    mins = sapply(weather[modelVars], min)
+    maxes = sapply(weather[modelVars], max)
+
+    attrDescs = list()
+    for (varName in modelVars) {
+        min = mins[[varName]]
+        max = maxes[[varName]]
+        attrDescs[[varName]] = list(min = min, max = max, nDiv = 8)
+    }
+
+    model = create.cmac(mpgPredForm, weather, 8, 20, attrDescs)
+    model = train.cmac(model, weather[1:1073,], 1, 0.5)
+    model
+}
+
