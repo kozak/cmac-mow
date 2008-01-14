@@ -9,6 +9,9 @@ mse = function(desiredOutput, actualOutput) {
     mse
 }
 
+resample = function(df) {
+    df[sample(1:nrow(df)),]
+}
 
 debug_enable = function() {
     debugEnable <<- TRUE

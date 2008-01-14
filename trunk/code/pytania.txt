@@ -12,3 +12,8 @@
 - Co zrobiæ z wartoœciami NA
 - Jak porównywaæ prêdkoœæ gdy jest zale¿na od liczby warstw i np tego, ¿e SVM
     jest napisany w c
+- Jak zwektoryzowaæ to cholerstwo
+- Czy to normalne, ¿e mse siê roz³azi?
+
+- Czemu nnet nie dzia³a jak trzeba (ew. uzycie rpart lub randomForest)
+- Czy mozna uzyc best.svm...
