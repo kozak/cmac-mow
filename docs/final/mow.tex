@@ -1,0 +1,293 @@
+\documentclass{DTAS07}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{polski}
+\usepackage[cp1250]{inputenc}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsmath}
+\usepackage{url}
+
+\title{IMPLEMENTACJA APROKSYMATORA CMAC\\
+{\small Dokumentacja projektu MOW}
+}
+
+\author{Micha³ Skrzêdziejewski, Micha³ Kozakiewicz}
+
+\begin{document}
+\bibliographystyle{ieeetr}
+%\maketitle
+\thispagestyle{empty}
+
+\section{Cel projektu}
+Celem projektu by³o zaimplementowanie aproksymatora CMAC w jêzyku R 
+a nastêpnie porównanie go z innymi aproksymatorami dostêpnymi w R:
+\begin{itemize}
+\item implementacj¹ regresji liniowej (\verb|lm|),
+\item lasem losowym (\verb|randomForest|), oraz,
+\item maszyn¹ wektorów noœnych\
+
+\end{itemize}
+
+\section{Szczegó³y implementacyjne}
+CMAC jest skrótem od angielskiej nazwy {\em Cereberral Model Articulation Controller}. Zosta³ on opisany przez J.S. Albusa w 1975 r. Podstawow¹ zalet¹ omawianego aproksymatora jest szybkoœæ dzia³ania, zarówno jeœli chodzi o uczenie siê jak i
+obliczanie odpowiedzi dla konkretnych wartoœci wejœæ. Fakt ten uzasadnia stosowanie go w adaptacyjnych systemach sterowania czasu rzeczywistego.
+
+Zasadê dzia³ania CMACa naj³atwiej wyjaœniæ na przypadku jednowymiarowym
+(jedno wejœcie, jedno wyjœcie). Przejœcie do przypadku z wektorem wejœæ 
+o wiêkszej iloœci elementów nie nastrêcza trudnoœci. Za³ó¿my ¿e rozpatrywany
+atrybut $\phi_0(x) \in (\phi_1^0, \phi_2^0]$. Podzielmy przedzia³ do którego 
+nale¿y $\phi_0(x)$ na $m_0$ przyleg³ych podprzedzia³ów o równych d³ugoœciach. Zauwa¿my ¿e z ka¿dym przyk³adem $x$ mo¿emy zwi¹zaæ przedzia³ do którego ``wpada'' $x$ ze wzglêdu na atrybut $\phi_0(x)$. Dodatkowo zwi¹¿my z ka¿dym przedzia³em parametr rzeczywisty oznaczaj¹cy wagê. Utwórzmy teraz 2 kolejne podzia³y (warstwy), lecz tym razem wprowadŸmy przesuniêcie pocz¹tku 
+podzia³u, jak na rysunku \ref{fig:przedzialy}. Zauwa¿my, ¿e teraz wartoœæ 
+atrybutu determinuje 3 aktywne przedzia³y, po jednym dla ka¿dej warstwy.
+Wielkoœæ wzglêdnego przesuniêcia kolejnej warstwy jest dobierana zwykle w nastêpuj¹cy sposób \cite{cichosz2000sus}:
+\begin{align}
+	\delta = \frac{d}{L}
+\end{align}
+gdzie $d$ jest szerokoœci¹ przedzia³u w pierwszej warstwie a $L$ liczb¹ warstw.
+W ten sposób, podzia³y w warstwie $l$ bêd¹ przesuniête o $\delta$ w stosunku do
+warstwy $l - 1$.
+Warto zauwa¿yæ, ¿e przy podziale pierwszej warstwy na $n$ przedzia³ów, ka¿da
+kolejna warstwa bêdzie podzielona na $n + 1$ przedzia³ów. 
+
+Obliczenie wyjœcia dla aproksymatora jest proste i sprowadza siê do dodania
+wag zwi¹zanych z przedzia³ami aktywowanymi przez dane wejœcie. Dla przyk³adu z 
+rysunku \ref{fig:przedzialy} bêdzie to:
+
+\begin{align*}
+	h(x) = w_2 + w_8 + w_{13}.
+\end{align*}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.6]{przedz.pdf}
+\caption{Aktywne przedzia³y dla zadanej wartoœci atrybutu}
+\label{fig:przedzialy}
+\end{figure}
+
+Uogólnienie przedstawionej idei na n-wymiarowy wektor atrybutów nie jest skomplikowane. W szczególnoœci, dotychczasowy podzia³ na przedzia³y
+bêdzie zast¹piony podzia³em n-wymiarowej przestrzeni na hiperszeœciany pe³ni¹ce
+funkcje przedzia³ów.
+
+\subsubsection{Tablica mieszaj¹ca}
+Istotnym pytaniem, jakie mo¿e siê nasun¹æ podczas rozwa¿añ na temat 
+implementacji aproksymatora CMAC jest to, w jaki sposób przechowywane s¹ wagi.
+Podejœcie naiwne, polegaj¹ce na przechowywaniu w pamiêci wielowymiarowej tablicy
+liczb rzeczywistych jest zwykle nie do zrealizowania
+Przybli¿ona liczba wag przechowywanych wag mo¿e byæ obliczona ze wzoru:
+
+Aby rozwi¹zaæ ten problem u¿ywa siê tablic mieszaj¹cych (ang. {\em hash table}).
+Zjawisko kolizji jest ignorowane, gdy¿ przyk³ady tylko w czêœci pokrywaj¹
+przestrzeñ wejœciow¹, a co za tym idzie, aktywuj¹ tylko u³amek 
+potencjalnie mo¿liwych do wykorzystania wag. W przypadku kolizji, ta sama waga
+mo¿e byæ aktywowana przez dwa znacznie ró¿ni¹ce siê wektory wejœciowe. Zjawisko
+zwykle nie powoduje wiêkszych problemów. 
+
+W naszej implementacji skorzystaliœmy z funkcji mieszaj¹cej podanej w 
+ \cite{smith1998imc}. Jako parametry przyjmuje ona indeks wagi, numer warstwy oraz maksymaln¹ liczbê bitów wygenerowanego indeksu.
+
+\subsubsection{Uczenie siê}
+Algorytm uczenia dla aproksymatora CMAC w swojej podstawowej wersji jest
+bardzo prosty. Na pocz¹tek nale¿y wybraæ pocz¹tkow¹ wartoœæ wag, np zerow¹
+lub losow¹. Podajemy teraz na 
+wejœcie aproksymatora przyk³ad $x_i$, co aktywuje $n$ wag, a na wyjœciu
+otrzymujemy wartoœæ $y_i$. Chcemy, aby dla przyk³adu $x_i$ wyjœcie 
+aproksymatora mia³o wartoœæ $t_i$, zmieniamy wiêc aktywne wagi zgodnie ze
+wzorem:
+
+\begin{align}
+	w_i \gets w_i + \frac{\alpha}{n}(t_i - x_i)
+\end{align}
+
+gdzie $\alpha$ oznacza wspó³czynnik uczenia siê. Udowodniono, ¿e
+powy¿szy sposób uczenia siê jest zawsze zbie¿ny.
+
+\section{Sposób u¿ycia aproksymatora}
+Podczas projektowania aproksymatora po³o¿ono nacisk na to, aby sposób jego
+u¿ycia by³ intuicyjny dla osób które korzysta³y z innych aproksymatorów dostêpnych w R. Aproksymator wymaga pakietu \verb|bitops|. W celu utworzenia 
+i nauczenia przyk³adowego aproksymatora nale¿y:
+
+\begin{itemize}
+\item Wejœæ do katalogu projektu:
+\begin{verbatim}
+setwd("C:\\elka\\mow\\cmac")
+\end{verbatim}
+
+\item Za³adowaæ zbiór przyk³adów:
+\begin{verbatim}
+bb = read.table("data/basketball.data", header=TRUE)
+\end{verbatim}
+
+\item Za³adowaæ plik Ÿród³owy aproksymatora:
+\begin{verbatim}
+source("cmac.R")
+\end{verbatim}
+
+\item Ustawiæ debugowanie na w³¹czone lub wy³¹czone:
+\begin{verbatim}
+debug_enable();
+\end{verbatim}
+lub
+\begin{verbatim}
+debug_disable();
+\end{verbatim}
+
+\item Stworzyæ formu³ê okreœlaj¹c¹ zale¿noœæ miêdzy
+atrybutem docelowym a pozosta³ymi atrybutami:
+
+\begin{verbatim}
+form = points_per_minute ~ .
+\end{verbatim}
+
+W naszym przyk³adzie okreœliliœmy, ¿e atrybut \verb|points_per_minute| 
+zale¿y od wszystkich pozosta³ych atrybutów.
+
+\item Stworzyæ listê z parametrami atrybutów (minimum, maksimum, liczba
+	podzia³ów pierwszej warstwy) oraz okreœliæ liczbê warstw aproksymatora.
+
+\begin{verbatim}
+    formTerms = terms(form, data=bb)
+    modelVars = attr(formTerms, "term.labels")
+
+	 # Obliczenie mininów i maksimów atrybutów
+    mins = sapply(bb[modelVars], min)
+    maxes = sapply(bb[modelVars], max)
+	
+	 # Ustalenie po¿¹danej rzeczywistej liczby podzia³ow
+    nDiv = list(
+        age = 25,
+        assists_per_minute = 20, 
+        height = 10,
+        time_played = 15
+    )
+	
+	 # Ustalenie liczby warstw aproksymatora
+    nLayers = 8
+
+    attrDescs = list()
+    for (varName in modelVars) {
+        min = mins[[varName]]
+        max = maxes[[varName]]
+        attrDescs[[varName]] = list(min = min, max = max, 
+        nDiv = round(nDiv[[varName]] / nLayers)
+    }
+\end{verbatim}
+
+Minimum i maksimum s¹ wyznaczone na podstawie zbioru danych,
+natomiast liczba podzia³ów warstwy pierwszej jest wyznaczana jako 
+zaokr¹glenie ilorazu po¿¹danej liczby rzeczywistych podzia³ów i liczby warstw.
+Umo¿liwia to manipulacjê liczb¹ warstw aproksymatora bez 
+potrzeby zmiany liczby podzia³ów pierwszej warstwy dla ka¿dego parametru z osobna, gdy¿ liczba rzeczywistych podzia³ów jest w przybli¿eniu taka sama.
+
+\item Stworzyæ aproksymator:
+
+\begin{verbatim}
+nBits = 20
+model = create.cmac(form, bb, nLayers, nBits, attrDescs)
+\end{verbatim}
+
+Gdzie rozmiar tablicy haszuj¹cej przechowuj¹cej wagi wynosi \verb|2^nBits|.
+
+\item Nauczyæ aproksymator:
+\begin{verbatim}
+learningRate = 0.2
+targetMse = 0.01
+model = train.cmac(model, bb, targetMse, learningRate)
+\end{verbatim}
+
+gdzie \verb|targetMse| jest wartoœci¹ b³êdu œredniokwadratowego 
+poni¿ej której nastêpuje zatrzymanie procesu uczenia siê a 
+\verb|learningRate| jest wspó³czynnikiem uczenia.
+
+\end{itemize}
+
+Nauczony aproksymator mo¿na wykorzystaæ do predykcji atrybutu docelowego w
+standardowy sposób:
+\begin{itemize}
+\item \verb|tf = predict(model, bb)|
+\end{itemize}
+
+Uwaga, w tym przyk³adzie dla uproszczenia dokonujemy predykcji na zbiorze 
+testowym co zwykle nie ma wiêkszego sensu.
+\subsection{Opis dzia³ania aproksymatora}
+
+\section{Testowanie}
+
+\section{Wnioski}
+W ramach projektu z przedmiotu MOW opracowano i przetestowano aproksymator
+CMAC. Zosta³o dokonane porównanie zaprojektowanego aproksymatora z 
+innymi modelami: regresj¹ liniow¹, maszyn¹ wektorów noœnych i lasem losowym.
+W przypadku ,,sztucznie'' wygenerowanej funkcji CMAC radzi sobie ca³kiem dobrze.
+
+Niestety sprawy maj¹ siê gorzej dla ,,prawdziwych'' danych. Nawet dla 
+ma³ej liczby warstw lub podzia³ów pierwszej warstwy, podczas dzia³ania 
+na danych testowych okazuje siê, ¿e wykorzystywane s¹ wagi które nie by³y aktywowane podczas procesu uczenia siê (ich wartoœæ wynosi zero). Powoduje 
+to pojawienie siê du¿ego b³êdu na wyjœciu klasyfikatora. Sytuacja ta ma
+prawdopodobnie zwi¹zek z nierównomiernym rozmieszczeniem atrybutów 
+w dziedzinie, szczególnie jeœli weŸmie siê pod uwagê, i¿ ich szczególne kombinacje, które determinuj¹ aktywn¹ wagê, mogê wystêpowaæ jeszcze rzadziej.
+W zwi¹zku z tym zdolnoœæ generalizacji nauczonego w ten sposób aproksymatora pozostawia wiele do ¿yczenia.
+
+G³ówne zastosowania aproksymatora CMAC wi¹¿¹ siê z zadaniami sterowania, szczególnie w robotyce, gdzie aproksymowane funkcje s¹ g³adkie (np. w przypadku
+œledzenia trajektorii) a przyk³ady równo roz³o¿one jeœli chodzi o dziedzinê, 
+zatem kiepskie wyniki CMACa nie powinny byæ zaskoczeniem. 
+Ze wzglêdu na zasygnalizowane wczeœniej problemy, zastosowanie CMACa w 
+odkrywaniu wiedzy wydaje siê z³ym pomys³em. Inne aproksymatory takie jak SVM du¿o lepiej sprawdzaj¹ siê w takich zastosowaniach. Niewykluczone, ¿e 
+wprowadzenie pewnych modyfikacji, takich jak nierównomierny podzia³ 
+w warstwach czy skalowanie wartoœci atrybutów mog³oby poprawiæ dzia³anie aproksymatora CMAC, jednak wykracza³oby poza zakres projektu.
+
+\subsection{Aproksymator CMAC}
+
+
+\subsubsection{Szczegó³y implementacyjne}
+
+
+\section{SZCZEGÓ£Y PROJEKTU}
+
+\begin{itemize}
+\item {\bf Weather Ankara}. Dane ze stacji pogodowej w Ankarze. 10 atrybutów 
+	ci¹g³ych, atrybutem przewidywanym jest œrednia temperatura. Liczba elementów w zbiorze: 1609. Zbiór atrakcyjny ze wzglêdu na jedynie ci¹g³e atrybuty i brak 
+nieznanych wartoœci.
+
+\item {\bf Pollution}. Dane na temat zanieczyszczenia œrodowiska. 15 atrybutów
+ci¹g³ych, wartoœci¹ przewidywan¹ jest œmiertelnoœæ. Liczba elementów w zbiorze: 60.
+\item {\bf Stock Prices}. Codzienne notowania gie³dowe dotycz¹ce 10 spó³ek zwi¹zanych z lotnictwem. Przewidywan¹ wartoœci¹ jest cena spó³ki numer 10. 
+Liczba elementów w zbiorze: 950.
+
+\item {\bf Auto-Mpg}. Dane na temat samochodów. 4 atrybuty ci¹g³e, 2 porz¹dkowe, 1 nominalny, wartoœci¹ przewidywan¹ jest zu¿ycie paliwa wyra¿one w galonach na
+milê. Liczba elementów w zbiorze: 398
+
+\item {\bf Fat}. Dane pacjentów. 17 atrybutów ci¹g³ych, wartoœci¹ przewidywan¹ 
+jest wzrost. Liczba elementów w zbiorze: 252.
+
+Wybrane zbiory nie posiadaj¹ brakuj¹cych wartoœci, prawdopodobnie nie bêdzie wiêc konieczna wstêpna obróbka danych. W wypadku zestawu Auto-mpg bêdzie konieczna transformacja atrybutu nominalnego.
+\end{itemize}
+
+\subsection{Testy}
+Procedura testuj¹ca sk³ada siê z nastêpuj¹cych kroków:
+\begin{enumerate}
+\item Podzielenie zbioru przyk³adów na trzy roz³¹czne, równoliczne, losowe podzbiory: 
+\begin{itemize}
+\item zbiór trenuj¹cy,
+\item zbiór walidacyjny, oraz,
+\item zbiór testowy.
+\end{itemize}
+
+\item Utworzenie kilku aproksymatorów CMAC poprzez wielokrotny trening 
+	na zbiorze trenuj¹cym dla ró¿nej iloœci warstw a nastêpnie wybór modelu
+	daj¹cego najmniejszy b³¹d na zbiorze walidacyjnym.
+
+\item Utworzenie najlepszych modeli dla lasu losowego oraz maszyny wektorów noœnych poprzez zastosowanie funkcji \verb|best.svm| i 
+
+\end{enumerate}
+
+Zauwa¿my, ¿e zbiór testowy jest u¿ywany tylko i wy³¹cznie w ostatecznej 
+ocenie modeli, nie ma wiêc mo¿liwoœci, i¿ model ,,dopasowa³ siê'' do danych
+tesowych.
+
+\subsubsection{Szybkoœæ uczenia siê}
+W wielu zastosowaniach szybkoœæ uczenia siê jest cech¹ drugorzêdn¹ je¿eli chodzi
+o kryterium wyboru takiego czy innego aproksymatora. Dlatego te¿ zostanie zmierzony i porównany czas uczenia siê poszczególnych aproksymatorów dla 
+kolejnych zestawów treningowych.
+
+\bibliography{mow}
+\end{document}
