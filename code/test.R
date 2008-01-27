@@ -171,3 +171,39 @@ load_weather = function() {
     model
 }
 
+
+tf = function(x, y) {
+    10 * cos(sqrt(x^2+y^2))/(1+sqrt(x^2+y^2))
+}
+
+
+test_artif = function() {
+    gr <- expand.grid(x = seq(-2, 2, 0.2), y = seq(-2, 2, 0.2))
+    gr$z = tf(gr$x, gr$y)
+    wines = data.frame(gr)
+
+    grtst = expand.grid(x = seq(-1.9, 1.9, 0.2), y = seq(-1.9, 1.9, 0.2))
+    grtst$z = tf(grtst$x, grtst$y)
+    dftst = data.frame(grtst)
+
+    mpgPredForm = z ~ x + y
+    formTerms = terms(mpgPredForm, data=wines)
+    modelVars = attr(formTerms, "term.labels")
+    mins = sapply(wines[modelVars], min)
+    maxes = sapply(wines[modelVars], max)
+
+    cat("mins = ", mins, "maxes = ", maxes, "\n")
+
+    nDiv = list(x = 6, y = 6)
+
+    attrDescs = list()
+    for (varName in modelVars) {
+        min = mins[[varName]]
+        max = maxes[[varName]]
+        attrDescs[[varName]] = list(min = min, max = max, nDiv = nDiv[[varName]])
+    }
+
+    model = create.cmac(mpgPredForm, wines, 13, 15, attrDescs)
+    model = train.cmac(model, wines, 0.01, 0.1)
+    list(model = model, tr = wines, tst = dftst)
+}
