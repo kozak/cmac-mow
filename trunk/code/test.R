@@ -207,3 +207,41 @@ test_artif = function() {
     model = train.cmac(model, wines, 0.01, 0.1)
     list(model = model, tr = wines, tst = dftst)
 }
+
+test_basket = function() {
+    bb = na.omit(read.table("data/basketball.data", header=TRUE, na.strings="?"))
+    bb = resample(bb)
+    
+    trainingSet = bb[1:64, ];
+    testSet = bb[65:96, ];
+
+
+
+
+    mpgPredForm = points_per_minute ~ .
+    formTerms = terms(mpgPredForm, data=bb)
+    modelVars = attr(formTerms, "term.labels")
+    mins = sapply(bb[modelVars], min)
+    maxes = sapply(bb[modelVars], max)
+
+    nDiv = list(
+        age = 25,
+        assists_per_minute = 20, 
+        height = 10,
+        time_played = 15
+    )
+
+    nLayers = 8
+
+    attrDescs = list()
+    for (varName in modelVars) {
+        min = mins[[varName]]
+        max = maxes[[varName]]
+        attrDescs[[varName]] = list(min = min, max = max, 
+        nDiv = round(nDiv[[varName]] / nLayers)
+    }
+
+    model = create.cmac(mpgPredForm, bb, nLayers, 20, attrDescs)
+    model = train.cmac(model, trainingSet, 0.001, 0.15)
+    list(cmac = model, trSet = bb[1:64,], testSet = bb[65:nrow(bb),])
+}

@@ -43,15 +43,21 @@ create.cmac = function(formula, data, nLayers, nWeightBits, attrDescs, ...) {
 # data - dane do nauki
 # targetMse - zadany błąd średniokwadratowy
 # tr - współczynnik uczenia się (training rate)
-train.cmac = function(cmac, data, targetMse, tr) {
+train.cmac = function(cmac, data, targetMse, tr, maxIters=10000000) {
     debug_enter("train.cmac")
+
+    cmac$tr = tr
 
     desiredOutput = data[[cmac$targetAttr]]
     newData = data[cmac$otherAttrs]
 
     actualOutput = NULL
     currentMse = NULL
+    iters = 0
     while ((currentMse = mse(desiredOutput, (actualOutput = predict.cmac(cmac, newData)))) > targetMse) {
+        if (maxIters == iters) {
+            break
+        }
         info("Training, mse = ", currentMse, "\n")
         flush.console()
         for (i in 1:nrow(newData)) {
@@ -66,11 +72,14 @@ train.cmac = function(cmac, data, targetMse, tr) {
             cmac$weights[weightIndices] = cmac$weights[weightIndices] + weightUpdate
             cmac$refWeights[weightIndices] = TRUE
         }
+        iters = iters + 1
     }
+    info("trained CMAC, mse = ", currentMse)
     debug_ret("train.cmac")
     cmac
 }
 
+# Przewiduj atrybut docelowy dla przykladu lub zbioru przykladow
 predict.cmac = function(cmac, newData) {
     debug_enter("predict.cmac")
     output = vector("numeric", nrow(newData))
