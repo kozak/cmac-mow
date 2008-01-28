@@ -25,10 +25,9 @@ a nastêpnie porównanie go z innymi aproksymatorami dostêpnymi w R:
 \begin{itemize}
 \item implementacj¹ regresji liniowej (\verb|lm|),
 \item lasem losowym (\verb|randomForest|), oraz,
-\item maszyn¹ wektorów noœnych\
+\item maszyn¹ wektorów noœnych.
 \end{itemize}
 
-Pocz¹tkowym za³o¿eniem by³o 
 
 \section{Szczegó³y implementacyjne}
 CMAC jest skrótem od angielskiej nazwy {\em Cereberral Model Articulation Controller}. Zosta³ on opisany przez J.S. Albusa w 1975 r. Podstawow¹ zalet¹ omawianego aproksymatora jest szybkoœæ dzia³ania, zarówno jeœli chodzi o uczenie siê jak i
@@ -97,7 +96,7 @@ aproksymatora mia³o wartoœæ $t_i$, zmieniamy wiêc aktywne wagi zgodnie ze
 wzorem:
 
 \begin{align}
-	w_i \gets w_i + \frac{\alpha}{n}(t_i - x_i)
+	w_i \gets w_i + \frac{\alpha}{n}(t_i - y_i)
 \end{align}
 
 gdzie $\alpha$ oznacza wspó³czynnik uczenia siê. Udowodniono, ¿e
@@ -272,6 +271,13 @@ Zauwa¿my, ¿e zbiór testowy jest u¿ywany tylko i wy³¹cznie w ostatecznej
 ocenie modeli, nie ma wiêc mo¿liwoœci, i¿ model ,,dopasowa³ siê'' do danych
 testowych.
 
+Funkcj¹ oceny jest b³¹d œredniokwadratowy:
+
+\begin{align}
+	e^f_P(h) = \frac{1}{|P|}\sum_{x\in P}(f(x)-h(x))^2.
+	\label{eq:blad}
+\end{align}
+
 \subsection{Wyniki testów}
 \subsubsection{Sztuczny zbiór danych}
 Pierwszym zbiorem danych jest zbiór wygenerowany za pomoc¹ nastêpuj¹cych poleceñ
@@ -340,6 +346,42 @@ Okazuje siê, ¿e regresja liniowa sprawdza siê najlepiej dla omawianego przypadku
 jednak ró¿nica miêdzy jego b³êdem na zbiorze testowym a b³êdem pope³nianym
 przez maszynê wektorów noœnych, nie jest du¿a.
 
+\subsubsection{Gie³da}
+Ostatnim zbiorem danych s¹ notowania 10 spó³ek gie³dowych
+(plik \verb|data/stockprices.data|). Atrybutem docelowym jest
+cena spó³ki numer 10. W zbiorze znajduje siê 950 przyk³adów.
+Test uruchamiany jest 
+poleceniem:
+
+\begin{verbatim}
+source("test2.R")
+test_stocks()
+\end{verbatim}
+
+Niestety, ju¿ w momencie uczenia na 2/3 zbioru daje siê odczuæ powolnoœæ algorytmu ucz¹cego. Wyniki testu s¹ nastêpuj¹ce:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\quad & CMAC & SVM &RandomForest & LM\\
+\hline
+mse & 245 & 0.094 & 0.75 & 5.91\\
+\hline
+\end{tabular}
+\end{table}
+
+Dla takich zbiorów danych, zaprojektowany aproksymator okazuje siê zupe³nie 
+nieprzydany. Proces uczenia siê jest bardzo wolny, a nauczony aproksymator podczas predykcji aktywuje jedynie czêœæ wag które by³y ustawiane podczas
+uczenia siê. Powoduje to astronomiczny b³¹d aproksymatora. Mo¿e to mieæ zwi¹zek 
+miêdzy innymi z nierównomiernym rozmieszczeniem przyk³adów jeœli chodzi o
+dziedzinê atrybutów.
+
+\subsubsection{Uwagi}
+Przeprowadzaliœmy próby na wiêkszych zbiorach danych (jeœli chodzi o 
+iloœæ przyk³adów i atrybutów) jednak okaza³o siê, ¿e praktycznie niewykonalne
+jest uczenie na zbiorach danych wiêkszych ni¿ gie³da. Z tego te¿ powodu
+badanie wiêkszych zbiorów zosta³o zarzucone.
 
 \section{Wnioski}
 W ramach projektu z przedmiotu MOW opracowano i przetestowano aproksymator
@@ -350,7 +392,7 @@ W przypadku ,,sztucznie'' wygenerowanej funkcji CMAC radzi sobie ca³kiem dobrze.
 Niestety sprawy maj¹ siê gorzej dla ,,prawdziwych'' danych. Nawet dla 
 ma³ej liczby warstw lub podzia³ów pierwszej warstwy, podczas dzia³ania 
 na danych testowych okazuje siê, ¿e wykorzystywane s¹ wagi które nie by³y aktywowane podczas procesu uczenia siê (ich wartoœæ wynosi zero). Powoduje 
-to pojawienie siê du¿ego b³êdu na wyjœciu klasyfikatora. Sytuacja ta ma
+to pojawienie siê du¿ego b³êdu na wyjœciu aproksymatora. Sytuacja ta ma
 prawdopodobnie zwi¹zek z nierównomiernym rozmieszczeniem atrybutów 
 w dziedzinie, szczególnie jeœli weŸmie siê pod uwagê, i¿ ich szczególne kombinacje, które determinuj¹ aktywn¹ wagê, mogê wystêpowaæ jeszcze rzadziej.
 Problemem jest te¿ wyznaczenie optymalnej liczby podzia³ów pierwszej warstwy
@@ -368,6 +410,6 @@ wprowadzenie pewnych modyfikacji, takich jak nierównomierny podzia³
 w warstwach czy skalowanie wartoœci atrybutów mog³oby poprawiæ dzia³anie aproksymatora CMAC. Mo¿na by tak¿e opracowaæ 
 heurystykê dostosowuj¹c¹ wspó³czynnik uczenia siê. Przede wszystkim jednak
 najistotniejsz¹ zmianê mog³oby przynieœæ wprowadzenie efektywnego okreœlenia 
-liczby podzia³ów pierwszej warstwy wszystkich atrybutów w po³¹czeniu z liczb¹ warstw. Jednak wszystkie te modyfikacje wykraczaj¹ poza zakres projektu.
+liczby podzia³ów pierwszej warstwy wszystkich atrybutów w po³¹czeniu z liczb¹ warstw. Ponadto szybkoœæ dzia³ania aproksymatora, szczególnie podczas uczenia siê, pozostawia wiele do ¿yczenia. Jednak wszystkie te modyfikacje wykraczaj¹ poza zakres projektu.
 \bibliography{mow}
 \end{document}
