@@ -26,8 +26,9 @@ a nastêpnie porównanie go z innymi aproksymatorami dostêpnymi w R:
 \item implementacj¹ regresji liniowej (\verb|lm|),
 \item lasem losowym (\verb|randomForest|), oraz,
 \item maszyn¹ wektorów noœnych\
-
 \end{itemize}
+
+Pocz¹tkowym za³o¿eniem by³o 
 
 \section{Szczegó³y implementacyjne}
 CMAC jest skrótem od angielskiej nazwy {\em Cereberral Model Articulation Controller}. Zosta³ on opisany przez J.S. Albusa w 1975 r. Podstawow¹ zalet¹ omawianego aproksymatora jest szybkoœæ dzia³ania, zarówno jeœli chodzi o uczenie siê jak i
@@ -209,9 +210,136 @@ standardowy sposób:
 
 Uwaga, w tym przyk³adzie dla uproszczenia dokonujemy predykcji na zbiorze 
 testowym co zwykle nie ma wiêkszego sensu.
+
 \subsection{Opis dzia³ania aproksymatora}
+Zaimplementowany aproksymator dzia³a zgodnie z opisem podanym w czêœci 
+teoretycznej. Przed jego u¿yciem nale¿y stworzyæ listê z opisem atrybutów,
+gdzie wymaganymi wartoœciami s¹: minimum, maksimum oraz liczba podzia³ów 
+pierwszej warstwy. Przy tworzeniu aproksymatora nale¿y podaæ
+liczbê warstw które maj¹ byæ utworzone oraz liczbê bitów 
+determinuj¹cych wielkoœæ tablicy przechowuj¹cej wagi.
+
+W funkcji ucz¹cej nale¿y podaæ nastêpuj¹ce parametry:
+
+\begin{itemize}
+\item wartoœæ wspó³czynnik uczenia siê,
+\item ¿¹dan¹ wartoœæ b³êdu œredniokwadratowego,
+\item maksymaln¹ iloœæ iteracji.
+\end{itemize}
+
+Wspó³czynnik uczenia siê nale¿y dobraæ z zakresu 0.05-0.5. 
+¯¹dana wartoœæ b³êdu œredniokwadratowego powinna byæ dobierana w zale¿noœci
+ot atrybutu docelowego, a maksymalna iloœæ iteracji mo¿e zakoñczyæ proces
+uczenia siê w razie braku zbie¿noœci.
 
 \section{Testowanie}
+\subsection{Zbiory danych}
+Pocz¹tkowo planowano przetestowanie piêciu zbiorów
+danych z ogólnodostêpnych repozytoriów. Z powodu problemów po konsultacji z prowadz¹cym liczba ta ograniczona zosta³a do trzech, z czego pierwszy zbiór
+zosta³ wygenerowany ,,sztucznie''. By³o to podyktowane hipotez¹ o s³abej 
+przydatnoœci CMAC'a do zbiorów z atrybutami nierównomiernie pokrywaj¹cymi dziedzinê. Zrezygnowano te¿ z ,,gigantycznych'' zbiorów, gdy¿ w obecnej implementacji czas nauki by³ nie do przyjêcia (zaznaczmy, ¿e implementacja 
+SVM z któr¹ porównywany by³ nasz aproksymator jest napisana w C).
+
+\subsection{Procedura testowania}
+Procedura testuj¹ca sk³ada siê z nastêpuj¹cych kroków:
+\begin{enumerate}
+\item Podzielenie zbioru przyk³adów na trzy roz³¹czne, równoliczne, losowe podzbiory: 
+\begin{itemize}
+\item zbiór trenuj¹cy,
+\item zbiór walidacyjny, oraz,
+\item zbiór testowy.
+\end{itemize}
+
+\item Utworzenie kilku aproksymatorów CMAC poprzez wielokrotny trening 
+	na zbiorze trenuj¹cym dla ró¿nej iloœci warstw a nastêpnie wybór modelu
+	daj¹cego najmniejszy b³¹d na zbiorze walidacyjnym (liczba rzeczywistych 
+	podzia³ów dla dziedziny atrybutu pozostaje sta³a)
+
+\item Utworzenie instancji aproksymatora CMAC z parametrami otrzymanymi w poprzednim kroku oraz nauczenie go zbiorem przyk³adów powsta³ym poprzez 
+po³¹czenie zbioru treningowego i walidacyjnego.
+
+\item Utworzenie najlepszych modeli dla lasu losowego oraz maszyny wektorów noœnych poprzez zastosowanie funkcji \verb|best.svm| i \verb|best.randomForest|
+na zbiorze danych utworzonym poprzez po³¹czenie zbioru trenuj¹cego i walidacyjnego. Funkcje te wybieraj¹ modele o najlepszych parametrach poprzez 
+zastosowanie oceny krzy¿owej. 
+
+\item Utworzenie aproksymatora liniowego u¿ywaj¹c zbioru danych uzyskanego poprzez po³¹czenie zbioru trenuj¹cego i walidacyjnego (w tym przypadku nie 
+mo¿emy sterowaæ ¿adnymi parametrami modelu). 
+
+\item Obliczenie b³êdu œredniokwadratowego pope³nianego przez ka¿dy z aproksymatorów na zbiorze testowym, co pozwala na ocenê jakoœci generalizacji.
+\end{enumerate}
+
+Zauwa¿my, ¿e zbiór testowy jest u¿ywany tylko i wy³¹cznie w ostatecznej 
+ocenie modeli, nie ma wiêc mo¿liwoœci, i¿ model ,,dopasowa³ siê'' do danych
+testowych.
+
+\subsection{Wyniki testów}
+\subsubsection{Sztuczny zbiór danych}
+Pierwszym zbiorem danych jest zbiór wygenerowany za pomoc¹ nastêpuj¹cych poleceñ
+
+\begin{verbatim}
+tf = function(x, y) {
+    10 * cos(sqrt(x^2+y^2))/(1+sqrt(x^2+y^2))
+}
+
+gr <- expand.grid(x = seq(-2, 2, 0.2), y = seq(-2, 2, 0.2))
+gr$z = tf(gr$x, gr$y)
+artif = data.frame(gr)
+
+\end{verbatim}
+
+Zbiór ten równomiernie pokrywa przestrzeñ atrybutów. Przy powy¿szych ustawieniach liczy on 441 elementy. Test jest uruchamiany poleceniem:
+
+\begin{verbatim}
+source("test2.R")
+test_artificial()
+\end{verbatim}
+
+Wyniki testów dla tego zbioru kszta³tuj¹
+siê nastêpuj¹co:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\quad & CMAC & SVM &RandomForest & LM\\
+\hline
+mse & 0.036 & 0.4 & 0.11 & 5.34\\
+\hline
+\end{tabular}
+\end{table}
+
+Widaæ, i¿ CMAC bardzo dobrze radzi sobie z tego typu zbiorami danych. Osi¹ga on
+lepsze wyniki ni¿ pozosta³e aproksymatory. W tym wypadku usprawiedliwiona jest jedynie regresja liniowa, gdy¿ przybli¿ana funkcja jest silnie nieliniowa, dlatego jej wynik znacz¹co odbiega od pozosta³ych.
+
+\subsubsection{Koszykarze}
+Kolejny zbiór danych dotyczy statystyk z koszykówki (plik \verb|data/basketball.data|). Zbiór liczy 96 przyk³adów, a 
+atrybutem docelowym jest liczba punktów na minutê. Test uruchamiany jest 
+poleceniem:
+
+\begin{verbatim}
+source("test2.R")
+test_basketball()
+\end{verbatim}
+
+Wyniki testu s¹ nastêpuj¹ce:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\quad & CMAC & SVM &RandomForest & LM\\
+\hline
+mse & 0.014 & 0.096 & 0.010 & 0.0092\\
+\hline
+\end{tabular}
+\end{table}
+
+Wyniki tego testu pokazuj¹, ¿e przed zastosowaniem modelu nieliniowego 
+nale¿y zawsze sprawdziæ, czy nie jest mo¿liwe przybli¿enie modelem liniowym.
+Okazuje siê, ¿e regresja liniowa sprawdza siê najlepiej dla omawianego przypadku. Zaprojektowany aproksymator CMAC radzi sobie ok. 1.5 razy gorzej,
+jednak ró¿nica miêdzy jego b³êdem na zbiorze testowym a b³êdem pope³nianym
+przez maszynê wektorów noœnych, nie jest du¿a.
+
 
 \section{Wnioski}
 W ramach projektu z przedmiotu MOW opracowano i przetestowano aproksymator
@@ -225,6 +353,10 @@ na danych testowych okazuje siê, ¿e wykorzystywane s¹ wagi które nie by³y aktywo
 to pojawienie siê du¿ego b³êdu na wyjœciu klasyfikatora. Sytuacja ta ma
 prawdopodobnie zwi¹zek z nierównomiernym rozmieszczeniem atrybutów 
 w dziedzinie, szczególnie jeœli weŸmie siê pod uwagê, i¿ ich szczególne kombinacje, które determinuj¹ aktywn¹ wagê, mogê wystêpowaæ jeszcze rzadziej.
+Problemem jest te¿ wyznaczenie optymalnej liczby podzia³ów pierwszej warstwy
+dla ka¿dego atrybutu. O ile wyznaczenie liczby warstw mo¿na zrealizowaæ poprzez
+ocenê krzy¿ow¹, to liczba mo¿liwych kombinacji w przypadku podzia³ów dziedzin atrybutów jest zbyt du¿a. 
+
 W zwi¹zku z tym zdolnoœæ generalizacji nauczonego w ten sposób aproksymatora pozostawia wiele do ¿yczenia.
 
 G³ówne zastosowania aproksymatora CMAC wi¹¿¹ siê z zadaniami sterowania, szczególnie w robotyce, gdzie aproksymowane funkcje s¹ g³adkie (np. w przypadku
@@ -233,61 +365,9 @@ zatem kiepskie wyniki CMACa nie powinny byæ zaskoczeniem.
 Ze wzglêdu na zasygnalizowane wczeœniej problemy, zastosowanie CMACa w 
 odkrywaniu wiedzy wydaje siê z³ym pomys³em. Inne aproksymatory takie jak SVM du¿o lepiej sprawdzaj¹ siê w takich zastosowaniach. Niewykluczone, ¿e 
 wprowadzenie pewnych modyfikacji, takich jak nierównomierny podzia³ 
-w warstwach czy skalowanie wartoœci atrybutów mog³oby poprawiæ dzia³anie aproksymatora CMAC, jednak wykracza³oby poza zakres projektu.
-
-\subsection{Aproksymator CMAC}
-
-
-\subsubsection{Szczegó³y implementacyjne}
-
-
-\section{SZCZEGÓ£Y PROJEKTU}
-
-\begin{itemize}
-\item {\bf Weather Ankara}. Dane ze stacji pogodowej w Ankarze. 10 atrybutów 
-	ci¹g³ych, atrybutem przewidywanym jest œrednia temperatura. Liczba elementów w zbiorze: 1609. Zbiór atrakcyjny ze wzglêdu na jedynie ci¹g³e atrybuty i brak 
-nieznanych wartoœci.
-
-\item {\bf Pollution}. Dane na temat zanieczyszczenia œrodowiska. 15 atrybutów
-ci¹g³ych, wartoœci¹ przewidywan¹ jest œmiertelnoœæ. Liczba elementów w zbiorze: 60.
-\item {\bf Stock Prices}. Codzienne notowania gie³dowe dotycz¹ce 10 spó³ek zwi¹zanych z lotnictwem. Przewidywan¹ wartoœci¹ jest cena spó³ki numer 10. 
-Liczba elementów w zbiorze: 950.
-
-\item {\bf Auto-Mpg}. Dane na temat samochodów. 4 atrybuty ci¹g³e, 2 porz¹dkowe, 1 nominalny, wartoœci¹ przewidywan¹ jest zu¿ycie paliwa wyra¿one w galonach na
-milê. Liczba elementów w zbiorze: 398
-
-\item {\bf Fat}. Dane pacjentów. 17 atrybutów ci¹g³ych, wartoœci¹ przewidywan¹ 
-jest wzrost. Liczba elementów w zbiorze: 252.
-
-Wybrane zbiory nie posiadaj¹ brakuj¹cych wartoœci, prawdopodobnie nie bêdzie wiêc konieczna wstêpna obróbka danych. W wypadku zestawu Auto-mpg bêdzie konieczna transformacja atrybutu nominalnego.
-\end{itemize}
-
-\subsection{Testy}
-Procedura testuj¹ca sk³ada siê z nastêpuj¹cych kroków:
-\begin{enumerate}
-\item Podzielenie zbioru przyk³adów na trzy roz³¹czne, równoliczne, losowe podzbiory: 
-\begin{itemize}
-\item zbiór trenuj¹cy,
-\item zbiór walidacyjny, oraz,
-\item zbiór testowy.
-\end{itemize}
-
-\item Utworzenie kilku aproksymatorów CMAC poprzez wielokrotny trening 
-	na zbiorze trenuj¹cym dla ró¿nej iloœci warstw a nastêpnie wybór modelu
-	daj¹cego najmniejszy b³¹d na zbiorze walidacyjnym.
-
-\item Utworzenie najlepszych modeli dla lasu losowego oraz maszyny wektorów noœnych poprzez zastosowanie funkcji \verb|best.svm| i 
-
-\end{enumerate}
-
-Zauwa¿my, ¿e zbiór testowy jest u¿ywany tylko i wy³¹cznie w ostatecznej 
-ocenie modeli, nie ma wiêc mo¿liwoœci, i¿ model ,,dopasowa³ siê'' do danych
-tesowych.
-
-\subsubsection{Szybkoœæ uczenia siê}
-W wielu zastosowaniach szybkoœæ uczenia siê jest cech¹ drugorzêdn¹ je¿eli chodzi
-o kryterium wyboru takiego czy innego aproksymatora. Dlatego te¿ zostanie zmierzony i porównany czas uczenia siê poszczególnych aproksymatorów dla 
-kolejnych zestawów treningowych.
-
+w warstwach czy skalowanie wartoœci atrybutów mog³oby poprawiæ dzia³anie aproksymatora CMAC. Mo¿na by tak¿e opracowaæ 
+heurystykê dostosowuj¹c¹ wspó³czynnik uczenia siê. Przede wszystkim jednak
+najistotniejsz¹ zmianê mog³oby przynieœæ wprowadzenie efektywnego okreœlenia 
+liczby podzia³ów pierwszej warstwy wszystkich atrybutów w po³¹czeniu z liczb¹ warstw. Jednak wszystkie te modyfikacje wykraczaj¹ poza zakres projektu.
 \bibliography{mow}
 \end{document}
