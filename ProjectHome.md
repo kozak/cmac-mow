@@ -1,0 +1,1 @@
+Implementation of Cerebellar Model Articulation Controller written in R language. Project for the knowledge discovery methods course at Warsaw University of Technology.
